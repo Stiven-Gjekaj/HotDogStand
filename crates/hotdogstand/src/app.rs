@@ -194,7 +194,16 @@ impl App {
         Ok(app)
     }
 
-    pub fn run(&self) -> anyhow::Result<()> {
+    pub fn run(&self, started: std::time::Instant) -> anyhow::Result<()> {
+        if timing() {
+            let mut first = true;
+            self.main.window().set_rendering_notifier(move |state, _| {
+                if first && matches!(state, slint::RenderingState::AfterRendering) {
+                    first = false;
+                    eprintln!("timing: first frame after {:.1?}", started.elapsed());
+                }
+            })?;
+        }
         self.main.show()?;
         slint::run_event_loop()?;
         Ok(())
@@ -372,6 +381,7 @@ impl App {
     /// Shows the tickets that pass the filter, in the order of the sort, and
     /// keeps the selected ticket selected.
     fn refresh_list(&self) {
+        let started = std::time::Instant::now();
         let data = self.data.borrow();
         let query = self.query.borrow();
         let selected = {
@@ -405,6 +415,14 @@ impl App {
         self.main
             .set_status_text(format::count(order.len(), data.tickets.len()).into());
         *self.shown.borrow_mut() = order;
+        if timing() {
+            eprintln!(
+                "timing: {} of {} tickets shown in {:.1?}",
+                self.shown.borrow().len(),
+                data.tickets.len(),
+                started.elapsed()
+            );
+        }
     }
 
     fn row(
@@ -1232,6 +1250,12 @@ impl App {
             Err(error) => self.report(format!("The export failed: {error}")),
         }
     }
+}
+
+/// True when `HOTDOGSTAND_TIMING` is set. Then the application writes the
+/// time of its first frame and of each refresh of the list to stderr.
+fn timing() -> bool {
+    std::env::var_os("HOTDOGSTAND_TIMING").is_some()
 }
 
 fn save_dialog(name: &str, kind: &str, extension: &str) -> Option<PathBuf> {

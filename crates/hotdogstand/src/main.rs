@@ -21,6 +21,7 @@ mod ui {
 const APP_ID: &str = "hotdogstand";
 
 fn main() -> anyhow::Result<()> {
+    let started = std::time::Instant::now();
     if cfg!(target_os = "linux") {
         slint::set_xdg_app_id(APP_ID)?;
     }
@@ -31,5 +32,5 @@ fn main() -> anyhow::Result<()> {
             anyhow::bail!("Cannot open the workspace file {}: {error}", path.display());
         }
     };
-    app::App::new(store, path)?.run()
+    app::App::new(store, path)?.run(started)
 }
