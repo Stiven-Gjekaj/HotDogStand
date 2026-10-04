@@ -130,7 +130,8 @@ Each of these waits for a person who needs it. A feature that nobody uses rots.
 - [ ] More than one workspace file, with "File > Open".
 - [ ] Attachments. This needs a directory beside the workspace file, a limit
       on size, and a place in the export.
-- [ ] Packages for Homebrew, Scoop, and winget.
+- Packages for Homebrew, Scoop, and winget. The winget package waits for the
+  review of microsoft/winget-pkgs#446597.
 
 Live sharing, sync, a server, and a password are not planned. HotDogStand is a
 local application. A team that wants to share the tickets sends an export.
