@@ -4,6 +4,7 @@ import { Theme } from "theme.slint";
 
 export struct MenuItem {
     text: string,
+    icon: image,
     checked: bool,
     // An item with no text draws a line between two groups.
     separator: bool,
@@ -46,6 +47,13 @@ export component Menu inherits PopupWindow {
                     height: 1px;
                     width: parent.width - 32px;
                     background: Theme.menu-gutter;
+                }
+                if !item.checked && item.icon.width > 0: Image {
+                    x: 6px;
+                    y: (parent.height - 16px) / 2;
+                    width: 16px;
+                    height: 16px;
+                    source: item.icon;
                 }
                 if item.checked: Path {
                     x: 9px;

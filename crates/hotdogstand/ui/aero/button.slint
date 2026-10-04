@@ -83,6 +83,7 @@ export component Button inherits Rectangle {
 // A flat button with a glass face on hover, for the command bar.
 export component CommandButton inherits Rectangle {
     in property <string> text;
+    in property <image> icon;
     in property <bool> enabled: true;
     // A small arrow after the text, for a button that opens a menu.
     in property <bool> has-menu;
@@ -100,9 +101,16 @@ export component CommandButton inherits Rectangle {
     background: touch.has-hover && root.enabled ? Theme.command-hover : transparent;
 
     layout := HorizontalLayout {
-        padding-left: 10px;
+        padding-left: root.icon.width > 0 ? 6px : 10px;
         padding-right: 10px;
         spacing: 5px;
+        if root.icon.width > 0: Image {
+            source: root.icon;
+            width: 16px;
+            height: 16px;
+            y: (parent.height - 16px) / 2;
+            opacity: root.enabled ? 1 : 0.5;
+        }
         Text {
             text: root.text;
             color: !root.enabled ? Theme.disabled-text

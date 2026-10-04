@@ -76,8 +76,8 @@ export component MainWindow inherits Window {
         x: export-button.absolute-position.x - root.absolute-position.x;
         y: export-button.absolute-position.y - root.absolute-position.y + export-button.height;
         items: [
-            { text: "Workspace to JSON..." },
-            { text: "List to CSV..." },
+            { text: "Workspace to JSON...", icon: @image-url("icons/export.svg") },
+            { text: "List to CSV...", icon: @image-url("icons/export.svg") },
         ];
         activated(i) => {
             if i == 0 { root.export-json(); } else { root.export-csv(); }
@@ -209,29 +209,35 @@ export component MainWindow inherits Window {
             CommandBar {
                 CommandButton {
                     text: "New ticket";
+                    icon: @image-url("icons/new-ticket.svg");
                     clicked => { root.new-ticket(); }
                 }
                 export-button := CommandButton {
                     text: "Export";
+                    icon: @image-url("icons/export.svg");
                     has-menu: true;
                     clicked => { export-menu.show(); }
                 }
                 CommandButton {
                     text: "People";
+                    icon: @image-url("icons/people.svg");
                     clicked => { root.show-people(); }
                 }
                 CommandButton {
                     text: "Labels";
+                    icon: @image-url("icons/labels.svg");
                     clicked => { root.show-labels(); }
                 }
                 Rectangle { horizontal-stretch: 1; }
                 options-button := CommandButton {
                     text: "Options";
+                    icon: @image-url("icons/options.svg");
                     has-menu: true;
                     clicked => { options-menu.show(); }
                 }
                 CommandButton {
                     text: "About";
+                    icon: @image-url("icons/about.svg");
                     clicked => { root.show-about(); }
                 }
             }
