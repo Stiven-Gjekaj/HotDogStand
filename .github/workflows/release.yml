@@ -100,6 +100,14 @@ jobs:
         with:
           path: dist
           merge-multiple: true
+      # The digest of each package. The package managers check each download
+      # against it, and scripts/*-manifest.sh and scripts/homebrew-cask.sh
+      # read it.
+      - name: Write SHA256SUMS
+        run: |
+          cd dist
+          sha256sum HotDogStand-* > SHA256SUMS
+          cat SHA256SUMS
       # The notes are the section of CHANGELOG.md for this version.
       - name: Write the notes
         run: |
