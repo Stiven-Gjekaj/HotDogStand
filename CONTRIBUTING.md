@@ -134,6 +134,14 @@ An agent that works in this repository follows [AGENTS.md](AGENTS.md).
 4. Tag the commit with `v` and the version, such as `v0.2.0`, and push the
    tag. The release workflow builds the packages and makes the release, with
    the section of CHANGELOG.md as its notes.
+5. Download `SHA256SUMS` from the release, and write the packages from it:
+
+       scripts/homebrew-cask.sh <version> SHA256SUMS > ../homebrew-tap/Casks/hotdogstand.rb
+       scripts/scoop-manifest.sh <version> SHA256SUMS > ../scoop-bucket/bucket/hotdogstand.json
+       scripts/winget-manifest.sh <version> SHA256SUMS ../winget-pkgs
+
+   Commit the cask and the manifest in their repositories, and open a pull
+   request to microsoft/winget-pkgs with the winget manifest.
 
 ## Reporting a security problem
 
