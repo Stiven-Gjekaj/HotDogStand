@@ -33,7 +33,7 @@ No account, no server, and no network means that nothing can stop this.
 | Migrations | `rusqlite_migration` | Each change to the schema is a step in the repository. |
 | Data directory | `directories` | It finds the correct directory for the data on each operating system. |
 | Export | `serde`, `serde_json`, `csv` | JSON for a full copy. CSV for a spreadsheet. |
-| Markdown | `pulldown-cmark`, not added yet | The description and the comments use Markdown. They show as plain text until this is built. |
+| Markdown | `StyledText` of Slint | The description and the comments use Markdown. Slint renders a part of CommonMark, so no other crate is necessary. |
 | Time | `jiff` | Timestamps in UTC, shown in the local time zone. |
 | Errors | `thiserror` in the libraries, `anyhow` in the binary | The same as the other projects of the maintainer. |
 | Lint and format | `cargo fmt`, `cargo clippy` | |
@@ -251,14 +251,16 @@ that an import can read it without loss.
 - Each theme has a light form and a dark form. Windows 7 had no dark mode, so
   the dark form of Aero keeps the shapes and the gloss, and makes the glass a
   dark slate.
-- The font is Segoe UI when the computer has it, and the font of the system
-  when it does not. The plan is to ship Selawik, which Microsoft publishes
-  under the SIL Open Font Licence as an open replacement for Segoe UI. The
-  project does not ship Segoe UI, because its licence does not permit that.
+- The font is Selawik, which Microsoft publishes under the SIL Open Font
+  Licence as an open replacement for Segoe UI. The binary holds it, with its
+  licence beside it in `ui/fonts/`. The project does not ship Segoe UI,
+  because its licence does not permit that.
 - The project draws its own icons, or takes them from a set with an open
   licence. It uses no icon, wallpaper, logo, or sound from Windows.
 - Keyboard use works: Tab moves between the controls, the arrow keys move in
-  the list, Enter opens a ticket, and Escape closes a ticket window.
+  the list, Enter opens a ticket, and Escape closes a ticket window. Alt and
+  the first letter of a command runs the command, as in Windows. TODO.md
+  lists the shortcuts.
 - Each control has an accessible role and label, so a screen reader can read
   the windows and a test can drive them.
 
