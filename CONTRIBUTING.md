@@ -47,6 +47,10 @@ Run the tests:
 
     cargo test
 
+Turn on the hook that checks the format before each commit:
+
+    git config core.hooksPath .githooks
+
 To work on a copy of the data that is not your real workspace, set
 `HOTDOGSTAND_WORKSPACE` to the path of another file.
 
