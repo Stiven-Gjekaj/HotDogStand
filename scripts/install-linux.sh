@@ -2,14 +2,20 @@
 # Installs HotDogStand for the person who runs it on Linux: the program, its
 # icons, and the entry in the menu of applications.
 #
-# Run it from the repository after `cargo build --release`.
+# Run it from the repository after `cargo build --release`, or from the
+# directory of a release archive, which holds the program beside this script.
 set -eu
 
 cd "$(dirname "$0")/.."
 data=${XDG_DATA_HOME:-$HOME/.local/share}
 bin=$HOME/.local/bin
 
-install -Dm755 target/release/hotdogstand "$bin/hotdogstand"
+if [ -f hotdogstand ]; then
+    program=hotdogstand
+else
+    program=target/release/hotdogstand
+fi
+install -Dm755 "$program" "$bin/hotdogstand"
 for size in 16 24 32 48 64 128 256 512; do
     install -Dm644 "assets/icons/png/$size.png" \
         "$data/icons/hicolor/${size}x${size}/apps/hotdogstand.png"
