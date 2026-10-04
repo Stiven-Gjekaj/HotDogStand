@@ -27,7 +27,9 @@ rfd = "=0.17.2"
 
 [workspace.lints.rust]
 rust_2018_idioms = { level = "warn", priority = -1 }
-unsafe_code = "forbid"
+# `deny` and not `forbid`: the code that Slint generates allows unsafe code
+# for itself, and `forbid` refuses that.
+unsafe_code = "deny"
 
 [workspace.lints.clippy]
 all = { level = "warn", priority = -1 }

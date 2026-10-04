@@ -13,6 +13,15 @@ publish = false
 [dependencies]
 hds-core.workspace = true
 hds-store.workspace = true
+anyhow.workspace = true
+jiff.workspace = true
+rfd.workspace = true
+# The winit accessor lets a window with no system frame ask the system to
+# resize it.
+slint = { workspace = true, features = ["unstable-winit-030"] }
+
+[build-dependencies]
+slint-build.workspace = true
 
 [lints]
 workspace = true
