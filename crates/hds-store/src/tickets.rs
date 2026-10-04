@@ -289,6 +289,22 @@ impl Store {
         Ok(comments.collect::<rusqlite::Result<_>>()?)
     }
 
+    pub(crate) fn all_comments(&self) -> Result<Vec<Comment>> {
+        let mut statement = self.conn.prepare(
+            "SELECT id, ticket_id, body, created_at, edited_at FROM comment ORDER BY id",
+        )?;
+        let comments = statement.query_map([], comment)?;
+        Ok(comments.collect::<rusqlite::Result<_>>()?)
+    }
+
+    pub(crate) fn all_events(&self) -> Result<Vec<Event>> {
+        let mut statement = self.conn.prepare(
+            "SELECT id, ticket_id, kind, old_value, new_value, created_at FROM event ORDER BY id",
+        )?;
+        let events = statement.query_map([], event)?;
+        Ok(events.collect::<rusqlite::Result<_>>()?)
+    }
+
     fn comment(&self, id: i64) -> Result<Comment> {
         self.conn
             .query_row(

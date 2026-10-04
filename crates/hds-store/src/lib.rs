@@ -5,6 +5,7 @@
 
 mod migrations;
 mod people;
+mod snapshot;
 mod tickets;
 
 use std::path::{Path, PathBuf};
@@ -121,6 +122,12 @@ impl Store {
                 row.get(0)
             })
             .optional()?)
+    }
+
+    pub(crate) fn settings(&self) -> Result<std::collections::BTreeMap<String, String>> {
+        let mut statement = self.conn.prepare("SELECT key, value FROM setting")?;
+        let pairs = statement.query_map([], |row| Ok((row.get(0)?, row.get(1)?)))?;
+        Ok(pairs.collect::<rusqlite::Result<_>>()?)
     }
 
     pub fn set_setting(&self, key: &str, value: &str) -> Result<()> {
