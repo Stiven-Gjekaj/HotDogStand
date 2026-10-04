@@ -121,7 +121,15 @@ system. [docs/architecture.md](docs/architecture.md#data-model) says where.
 
 ## Install
 
-Download the file for your system from the
+With a package manager:
+
+| System | Command |
+| ------ | ------- |
+| macOS | `brew install --cask --no-quarantine stiven-gjekaj/tap/hotdogstand` |
+| Windows, Scoop | `scoop bucket add stiven-gjekaj https://github.com/Stiven-Gjekaj/scoop-bucket` then `scoop install stiven-gjekaj/hotdogstand` |
+| Windows, winget | `winget install Stiven-Gjekaj.HotDogStand`, after Microsoft accepts the package |
+
+Or download the file for your system from the
 [latest release](https://github.com/Stiven-Gjekaj/HotDogStand/releases/latest).
 
 | System | File | Install |
