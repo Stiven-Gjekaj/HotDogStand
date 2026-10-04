@@ -4,9 +4,11 @@
 //! file and no window.
 
 mod error;
+pub mod event;
 pub mod people;
 pub mod ticket;
 
 pub use error::Error;
+pub use event::{Edit, Event, EventKind, NewEvent, apply};
 pub use people::{Comment, Label, Person};
 pub use ticket::{NewTicket, Priority, Status, Ticket, Title};
