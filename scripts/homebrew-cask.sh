@@ -33,7 +33,7 @@ cask "hotdogstand" do
   desc "Ticket manager on your own computer, with the look of Windows 7"
   homepage "https://github.com/Stiven-Gjekaj/HotDogStand"
 
-  depends_on macos: :big_sur
+  depends_on :macos
 
   app "HotDogStand.app"
 
