@@ -20,8 +20,8 @@ use slint::{Color, ComponentHandle, Model, ModelRc, SharedString, VecModel};
 use crate::format::{self, Names};
 use crate::frame;
 use crate::ui::{
-    AboutWindow, HistoryEntry, LabelChip, LabelsWindow, MainWindow, PeopleWindow, PersonRow, Theme,
-    ThemeName, TicketRow, TicketWindow,
+    AboutWindow, HistoryEntry, LabelChip, LabelsWindow, MainWindow, Markdown, PeopleWindow,
+    PersonRow, Theme, ThemeName, TicketRow, TicketWindow,
 };
 
 /// The column of the list that each header sorts by. The labels column does
@@ -565,6 +565,9 @@ impl App {
         };
         window.on_cancel(call(App::close_ticket));
         window.on_add_comment(call(App::add_comment));
+        window
+            .global::<Markdown<'_>>()
+            .on_render(|text| format::markdown(&text));
         window.on_close_or_reopen(call(App::close_or_reopen));
         let close = call(App::close_ticket);
         window.window().on_close_requested(move || {

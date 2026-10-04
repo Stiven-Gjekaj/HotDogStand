@@ -113,6 +113,13 @@ pub fn count(shown: usize, total: usize) -> String {
     }
 }
 
+/// Turns the Markdown of a description or a comment into styled text. A text
+/// that the parser refuses shows as it is.
+pub fn markdown(text: &str) -> slint::StyledText {
+    slint::StyledText::from_markdown(text)
+        .unwrap_or_else(|_| slint::StyledText::from_plain_text(text))
+}
+
 /// Reads `#rrggbb`. A color that is not in this form gives gray.
 pub fn hex_color(text: &str) -> (u8, u8, u8) {
     let digits = text.strip_prefix('#').unwrap_or_default();
@@ -212,6 +219,16 @@ mod tests {
         assert_eq!(count(1, 1), "1 ticket");
         assert_eq!(count(12, 12), "12 tickets");
         assert_eq!(count(1, 12), "1 ticket shown. 12 tickets in the workspace.");
+    }
+
+    #[test]
+    fn markdown_that_does_not_parse_shows_as_plain_text() {
+        let plain = slint::StyledText::from_plain_text("<font color=");
+        assert_eq!(markdown("<font color="), plain);
+        assert_ne!(
+            markdown("**bold**"),
+            slint::StyledText::from_plain_text("**bold**")
+        );
     }
 
     #[test]

@@ -3,7 +3,7 @@
 
 import { AeroFrame, ResizeEdge, Button, CheckBox, TextField, TextArea, ComboBox, InfoBar, TabBar, TabPanel, FieldLabel, ScrollArea } from "aero/index.slint";
 import { Theme } from "theme.slint";
-import { LabelChip, HistoryEntry } from "types.slint";
+import { LabelChip, HistoryEntry, Markdown } from "types.slint";
 
 component HistoryItem inherits Rectangle {
     in property <HistoryEntry> entry;
@@ -28,12 +28,12 @@ component HistoryItem inherits Rectangle {
                     font-family: Theme.font-family;
                     font-size: 11px;
                 }
-                Text {
-                    text: root.entry.text;
-                    color: Theme.text;
-                    font-family: Theme.font-family;
-                    font-size: Theme.font-size;
-                    wrap: word-wrap;
+                StyledText {
+                    text: Markdown.render(root.entry.text);
+                    default-color: Theme.text;
+                    default-font-family: Theme.font-family;
+                    default-font-size: Theme.font-size;
+                    link-color: Theme.link;
                 }
             }
         }
@@ -80,6 +80,7 @@ export component TicketWindow inherits Window {
     in property <[HistoryEntry]> history;
     in property <string> dates-text;
     in-out property <string> comment-draft;
+    in-out property <bool> preview;
     in-out property <string> error;
     in-out property <int> tab;
 
@@ -201,17 +202,48 @@ export component TicketWindow inherits Window {
                         Row {
                             // The label stays at the top while the field grows.
                             VerticalLayout {
+                                spacing: 4px;
                                 FieldLabel {
                                     text: "Description:";
                                     height: Theme.control-height;
                                 }
+                                CheckBox {
+                                    text: "Preview";
+                                    checked <=> root.preview;
+                                }
                                 Rectangle { }
                             }
-                            TextArea {
+                            if !root.preview: TextArea {
                                 colspan: 3;
                                 vertical-stretch: 1;
                                 text <=> root.description;
                                 placeholder: "Markdown is fine.";
+                            }
+                            if root.preview: Rectangle {
+                                colspan: 3;
+                                vertical-stretch: 1;
+                                min-height: 60px;
+                                border-width: 1px;
+                                border-color: Theme.field-border;
+                                background: Theme.content;
+                                clip: true;
+                                ScrollArea {
+                                    x: 1px;
+                                    y: 1px;
+                                    width: parent.width - 2px;
+                                    height: parent.height - 2px;
+                                    content-height: rendered.preferred-height + 12px;
+                                    rendered := StyledText {
+                                        x: 6px;
+                                        y: 5px;
+                                        width: parent.width - 12px;
+                                        text: Markdown.render(root.description);
+                                        default-color: Theme.text;
+                                        default-font-family: Theme.font-family;
+                                        default-font-size: Theme.font-size;
+                                        link-color: Theme.link;
+                                    }
+                                }
                             }
                         }
                         Row {
@@ -251,7 +283,7 @@ export component TicketWindow inherits Window {
                         TextArea {
                             height: 70px;
                             text <=> root.comment-draft;
-                            placeholder: "Write a comment";
+                            placeholder: "Write a comment. Markdown is fine.";
                         }
                         HorizontalLayout {
                             alignment: end;
