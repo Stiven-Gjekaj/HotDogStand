@@ -1,0 +1,196 @@
+// The glass frame of a window: the border, the title bar, and the caption
+// buttons. The window has no frame from the system. The frame asks the system
+// to move the window when the person drags the title bar, and to resize it
+// when the person drags an edge.
+
+import { Theme } from "../theme.slint";
+
+export enum ResizeEdge { north, south, east, west, north-east, north-west, south-east, south-west }
+
+component CaptionButton inherits Rectangle {
+    in property <string> kind; // "minimize", "maximize", "restore", or "close"
+    in property <length> left-radius;
+    in property <length> right-radius;
+    callback clicked();
+
+    property <bool> close: kind == "close";
+    width: close ? 43px : 26px;
+    height: 19px;
+    border-bottom-left-radius: left-radius;
+    border-bottom-right-radius: right-radius;
+    border-width: 1px;
+    border-color: close ? Theme.close-border : Theme.caption-border;
+    background: close
+        ? (touch.has-hover ? Theme.close-face-hover : Theme.close-face)
+        : (touch.has-hover ? Theme.caption-face-hover : Theme.caption-face);
+    clip: true;
+
+    // The shine on the upper half of the glass.
+    Rectangle {
+        x: 1px;
+        y: 1px;
+        width: parent.width - 2px;
+        height: 8px;
+        background: @linear-gradient(180deg, #ffffff66 0%, #ffffff10 100%);
+        border-radius: 2px;
+    }
+
+    // The glyph, drawn twice: a dark copy one pixel down, and the light glyph
+    // on it.
+    for offset[i] in [1px, 0px]: Path {
+        x: (parent.width - 11px) / 2;
+        y: (parent.height - 10px) / 2 + offset;
+        width: 11px;
+        height: 10px;
+        viewbox-width: 11;
+        viewbox-height: 10;
+        stroke: i == 0 ? Theme.caption-glyph-shadow : Theme.caption-glyph;
+        stroke-width: root.close ? 2.2px : 2px;
+        fill: transparent;
+        commands: root.kind == "close" ? "M 2 1 L 9 9 M 9 1 L 2 9"
+            : root.kind == "minimize" ? "M 2 8 L 9 8"
+            : root.kind == "restore" ? "M 1.5 4 L 7 4 L 7 8.5 L 1.5 8.5 Z M 4 4 L 4 1.5 L 9.5 1.5 L 9.5 6 L 7 6"
+            : "M 1.5 1.5 L 9.5 1.5 L 9.5 8.5 L 1.5 8.5 Z";
+    }
+
+    touch := TouchArea {
+        clicked => { root.clicked(); }
+    }
+}
+
+component ResizeHandle inherits TouchArea {
+    in property <ResizeEdge> edge;
+    callback start(ResizeEdge);
+    pointer-event(event) => {
+        if event.kind == PointerEventKind.down && event.button == PointerEventButton.left {
+            root.start(root.edge);
+        }
+    }
+}
+
+export component AeroFrame inherits Rectangle {
+    in property <string> title;
+    in property <image> icon;
+    // True when the system draws the frame. Then this component draws only
+    // the inside of the window.
+    in property <bool> system-frame;
+    in property <bool> maximized;
+    in property <bool> active: true;
+    in property <bool> resizable: true;
+    in property <bool> can-minimize: true;
+    callback minimize();
+    callback toggle-maximize();
+    callback close();
+    callback start-resize(ResizeEdge);
+
+    property <bool> drawn: !system-frame;
+    property <length> radius: drawn && !maximized ? Theme.frame-radius : 0px;
+    property <length> edge: drawn && !maximized ? Theme.frame-width : 0px;
+
+    background: drawn ? (active ? Theme.frame-glass : Theme.frame-glass-inactive) : Theme.face;
+    border-radius: radius;
+    border-width: drawn ? 1px : 0px;
+    border-color: Theme.frame-border;
+
+    // The white line inside the dark border makes the glass look thick.
+    if drawn: Rectangle {
+        x: 1px;
+        y: 1px;
+        width: parent.width - 2px;
+        height: parent.height - 2px;
+        border-radius: max(0px, root.radius - 1px);
+        border-width: 1px;
+        border-color: Theme.frame-highlight;
+    }
+
+    VerticalLayout {
+        padding-left: root.edge;
+        padding-right: root.edge;
+        padding-bottom: root.edge;
+        padding-top: 0px;
+        spacing: 0px;
+
+        if root.drawn: Rectangle {
+            height: Theme.title-height;
+
+            WindowMoveArea {
+                TouchArea {
+                    double-clicked => {
+                        if root.resizable {
+                            root.toggle-maximize();
+                        }
+                    }
+                }
+            }
+
+            HorizontalLayout {
+                padding-left: 4px;
+                spacing: 6px;
+                alignment: start;
+                if root.icon.width > 0: Image {
+                    source: root.icon;
+                    width: 16px;
+                    height: 16px;
+                    y: (parent.height - self.height) / 2 - 1px;
+                }
+                Text {
+                    text: root.title;
+                    color: Theme.title-text;
+                    font-family: Theme.font-family;
+                    font-size: Theme.title-font-size;
+                    vertical-alignment: center;
+                    overflow: elide;
+                }
+            }
+
+            // The caption buttons hang from the top edge of the frame.
+            HorizontalLayout {
+                x: parent.width - self.preferred-width;
+                y: 1px;
+                height: 19px;
+                spacing: -1px;
+                if root.can-minimize: CaptionButton {
+                    kind: "minimize";
+                    left-radius: 4px;
+                    clicked => { root.minimize(); }
+                }
+                if root.resizable: CaptionButton {
+                    kind: root.maximized ? "restore" : "maximize";
+                    left-radius: root.can-minimize ? 0px : 4px;
+                    clicked => { root.toggle-maximize(); }
+                }
+                CaptionButton {
+                    kind: "close";
+                    left-radius: root.can-minimize || root.resizable ? 0px : 4px;
+                    right-radius: 4px;
+                    clicked => { root.close(); }
+                }
+            }
+        }
+
+        // The client area.
+        Rectangle {
+            border-width: root.drawn ? 1px : 0px;
+            border-color: Theme.client-border;
+            background: Theme.face;
+            VerticalLayout {
+                padding: root.drawn ? 1px : 0px;
+                @children
+            }
+        }
+    }
+
+    // The edges and the corners that resize the window.
+    if root.drawn && root.resizable && !root.maximized: Rectangle {
+        property <length> grip: 5px;
+        property <length> corner: 12px;
+        ResizeHandle { edge: ResizeEdge.north; x: grip; y: 0; width: parent.width - 2 * grip; height: grip; mouse-cursor: ns-resize; start(e) => { root.start-resize(e); } }
+        ResizeHandle { edge: ResizeEdge.south; x: grip; y: parent.height - grip; width: parent.width - 2 * grip; height: grip; mouse-cursor: ns-resize; start(e) => { root.start-resize(e); } }
+        ResizeHandle { edge: ResizeEdge.west; x: 0; y: grip; width: grip; height: parent.height - 2 * grip; mouse-cursor: ew-resize; start(e) => { root.start-resize(e); } }
+        ResizeHandle { edge: ResizeEdge.east; x: parent.width - grip; y: grip; width: grip; height: parent.height - 2 * grip; mouse-cursor: ew-resize; start(e) => { root.start-resize(e); } }
+        ResizeHandle { edge: ResizeEdge.north-west; x: 0; y: 0; width: corner; height: grip; mouse-cursor: nwse-resize; start(e) => { root.start-resize(e); } }
+        ResizeHandle { edge: ResizeEdge.north-east; x: parent.width - corner; y: 0; width: corner; height: grip; mouse-cursor: nesw-resize; start(e) => { root.start-resize(e); } }
+        ResizeHandle { edge: ResizeEdge.south-west; x: 0; y: parent.height - corner; width: corner; height: corner; mouse-cursor: nesw-resize; start(e) => { root.start-resize(e); } }
+        ResizeHandle { edge: ResizeEdge.south-east; x: parent.width - corner; y: parent.height - corner; width: corner; height: corner; mouse-cursor: nwse-resize; start(e) => { root.start-resize(e); } }
+    }
+}

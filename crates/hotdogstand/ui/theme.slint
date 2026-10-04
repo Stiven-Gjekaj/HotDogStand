@@ -1,0 +1,137 @@
+// Every color and size of the application. A control takes its colors from
+// here and holds none of its own, so a theme changes this global and nothing
+// else.
+
+export enum ThemeName { aero, hot-dog-stand }
+
+export global Theme {
+    in-out property <ThemeName> name: ThemeName.aero;
+    out property <bool> hds: name == ThemeName.hot-dog-stand;
+
+    // Type.
+    out property <string> font-family: "Segoe UI";
+    out property <length> font-size: 12px;
+    out property <length> title-font-size: 12px;
+    out property <color> text: #000000;
+    out property <color> muted-text: hds ? #7a0000 : #5d6b7a;
+    out property <color> disabled-text: hds ? #a05050 : #8d8d8d;
+    out property <color> link: hds ? #000000 : #0066cc;
+
+    // The window frame.
+    out property <brush> frame-glass: hds
+        ? @linear-gradient(180deg, #ff5a4a 0%, #f00000 30%, #c00000 100%)
+        : @linear-gradient(180deg, #e4eefa 0%, #c6dbf1 30%, #b0cbe8 75%, #a5c2e2 100%);
+    out property <brush> frame-glass-inactive: hds
+        ? @linear-gradient(180deg, #ff8a80 0%, #e05050 100%)
+        : @linear-gradient(180deg, #edf2f8 0%, #dbe5f0 40%, #cfdcea 100%);
+    out property <color> frame-border: hds ? #000000 : #49698f;
+    out property <color> frame-highlight: #ffffffaa;
+    out property <color> title-text: hds ? #ffffff : #1b3655;
+    out property <color> client-border: hds ? #000000 : #829bb9;
+    out property <length> frame-radius: 7px;
+    out property <length> frame-width: 7px;
+    out property <length> title-height: 29px;
+
+    // The caption buttons.
+    out property <brush> caption-face: hds
+        ? @linear-gradient(180deg, #ffff80 0%, #ffff00 50%, #e0d000 100%)
+        : @linear-gradient(180deg, #eef4fb 0%, #d4e2f2 45%, #b9cee8 50%, #c9daee 100%);
+    out property <brush> caption-face-hover: hds
+        ? @linear-gradient(180deg, #ffffc0 0%, #ffff40 100%)
+        : @linear-gradient(180deg, #e9f6ff 0%, #b6e0fb 45%, #8cc9f3 50%, #a8dcfa 100%);
+    out property <brush> close-face: @linear-gradient(180deg, #e9a99a 0%, #d8705c 45%, #c4402a 50%, #d2654a 100%);
+    out property <brush> close-face-hover: @linear-gradient(180deg, #f7b8a6 0%, #ed6c4f 45%, #e0391b 50%, #ef7a55 100%);
+    out property <color> caption-border: hds ? #000000 : #5e7a9c;
+    out property <color> close-border: #7d2414;
+    out property <color> caption-glyph: hds ? #000000 : #ffffff;
+    out property <color> caption-glyph-shadow: hds ? #ffff00 : #33496a;
+
+    // Surfaces inside a window.
+    out property <color> face: hds ? #ffff00 : #f0f0f0;
+    out property <color> content: hds ? #ffff80 : #ffffff;
+    out property <color> separator: hds ? #000000 : #d5dfe5;
+
+    // Buttons.
+    out property <brush> button-face: hds
+        ? @linear-gradient(180deg, #ffffff 0%, #e8e8e8 50%, #c0c0c0 100%)
+        : @linear-gradient(180deg, #f2f2f2 0%, #ebebeb 50%, #dddddd 51%, #cfcfcf 100%);
+    out property <brush> button-face-hover: hds
+        ? @linear-gradient(180deg, #ffffff 0%, #ff8080 100%)
+        : @linear-gradient(180deg, #eaf6fd 0%, #d9f0fc 50%, #bee6fd 51%, #a7d9f5 100%);
+    out property <brush> button-face-pressed: hds
+        ? @linear-gradient(180deg, #ff4040 0%, #c00000 100%)
+        : @linear-gradient(180deg, #e5f4fc 0%, #c4e5f6 50%, #98d1ef 51%, #68b3db 100%);
+    out property <color> button-border: hds ? #000000 : #707070;
+    out property <color> button-border-hover: hds ? #000000 : #3c7fb1;
+    out property <color> button-border-pressed: hds ? #000000 : #2c628b;
+    out property <color> focus-ring: hds ? #000000 : #3399ff;
+    out property <length> control-radius: 3px;
+    out property <length> control-height: 23px;
+
+    // Text fields and lists.
+    out property <color> field-border: hds ? #000000 : #abadb3;
+    out property <color> field-border-hover: hds ? #000000 : #7eb4ea;
+    out property <color> field-border-focus: hds ? #000000 : #569de5;
+    out property <color> field-background: hds ? #ffffff : #ffffff;
+    out property <color> placeholder: hds ? #a06060 : #8d8d8d;
+
+    // The list view, like the details view of Explorer.
+    out property <brush> header-face: hds
+        ? @linear-gradient(180deg, #ff2020 0%, #c00000 100%)
+        : @linear-gradient(180deg, #ffffff 0%, #ffffff 40%, #f3f4f6 100%);
+    out property <brush> header-face-hover: hds
+        ? @linear-gradient(180deg, #ff6060 0%, #e00000 100%)
+        : @linear-gradient(180deg, #f3f9fd 0%, #e3f1fb 100%);
+    out property <color> header-text: hds ? #ffffff : #4c607a;
+    out property <color> header-divider: hds ? #000000 : #e2e3e4;
+    out property <color> row-hover: hds ? #ffff00 : #e5f3fb;
+    out property <color> row-hover-border: hds ? #000000 : #70c0e7;
+    out property <brush> row-selected: hds
+        ? @linear-gradient(180deg, #000000 0%, #000000 100%)
+        : @linear-gradient(180deg, #dcebfc 0%, #c1dbfc 100%);
+    out property <color> row-selected-border: hds ? #000000 : #7da2ce;
+    out property <color> row-selected-text: hds ? #ffffff : #000000;
+    out property <length> row-height: 22px;
+
+    // The command bar and the status bar, like Explorer.
+    out property <brush> command-bar: hds
+        ? @linear-gradient(180deg, #ff2a1a 0%, #d00000 100%)
+        : @linear-gradient(180deg, #f6f9fd 0%, #e7eff9 50%, #dce7f5 51%, #e0eaf6 100%);
+    out property <color> command-bar-border: hds ? #000000 : #a0afc3;
+    out property <color> command-text: hds ? #ffffff : #1e395b;
+    out property <brush> command-hover: hds
+        ? @linear-gradient(180deg, #ffff80 0%, #ffff00 100%)
+        : @linear-gradient(180deg, #fcfdfe 0%, #e7f1fa 50%, #d5e6f6 51%, #e2eef9 100%);
+    out property <color> command-hover-border: hds ? #000000 : #8ea9cc;
+    out property <brush> status-bar: hds
+        ? @linear-gradient(180deg, #ffff40 0%, #ffff00 100%)
+        : @linear-gradient(180deg, #f1f5fb 0%, #e3eaf3 100%);
+    out property <color> status-bar-border: hds ? #000000 : #c4d1e1;
+
+    // Tabs.
+    out property <color> tab-border: hds ? #000000 : #898c95;
+    out property <brush> tab-face: hds
+        ? @linear-gradient(180deg, #ffffff 0%, #ffd0d0 100%)
+        : @linear-gradient(180deg, #f2f2f2 0%, #ebebeb 50%, #dddddd 51%, #cfcfcf 100%);
+    out property <color> tab-selected: hds ? #ffff00 : #ffffff;
+
+    // The menu of a combo box.
+    out property <color> menu-background: hds ? #ffff80 : #f0f0f0;
+    out property <color> menu-border: hds ? #000000 : #979797;
+    out property <brush> menu-hover: hds
+        ? @linear-gradient(180deg, #000000 0%, #000000 100%)
+        : @linear-gradient(180deg, #f2f7fd 0%, #dbeafb 100%);
+    out property <color> menu-hover-border: hds ? #000000 : #a8d8eb;
+    out property <color> menu-hover-text: hds ? #ffffff : #000000;
+
+    // The yellow bar that holds an error, like the information bar of
+    // Internet Explorer.
+    out property <color> info-bar: hds ? #000000 : #ffffe1;
+    out property <color> info-bar-border: hds ? #ff0000 : #e0d080;
+    out property <color> info-bar-text: hds ? #ffff00 : #000000;
+
+    // The colors of the priorities, from low to urgent.
+    out property <[color]> priority-colors: hds
+        ? [#000000, #000000, #c00000, #ff0000]
+        : [#7f8c99, #1e395b, #c46a00, #c42b1c];
+}
