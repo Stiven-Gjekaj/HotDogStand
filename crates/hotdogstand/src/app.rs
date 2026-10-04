@@ -205,6 +205,8 @@ impl App {
         let main = &self.main;
         style!(self, main);
         main.set_system_frame(self.system_frame.get());
+        main.set_native_menu(cfg!(target_os = "macos"));
+        self.mark_menus();
         main.set_workspace_name(
             self.store
                 .borrow()
@@ -462,8 +464,18 @@ impl App {
         self.restyle();
     }
 
+    /// Sets the check marks of the macOS menus from the settings.
+    fn mark_menus(&self) {
+        let main = &self.main;
+        main.set_mark_aero(self.theme.get() == ThemeName::Aero);
+        main.set_mark_hot_dog_stand(self.theme.get() == ThemeName::HotDogStand);
+        main.set_mark_dark(self.dark.get());
+        main.set_mark_system_frame(self.system_frame.get());
+    }
+
     /// Gives every open window the current theme.
     fn restyle(&self) {
+        self.mark_menus();
         style!(self, &self.main);
         for view in self.ticket_windows.borrow().values() {
             style!(self, &view.window);
@@ -486,6 +498,7 @@ impl App {
             self.report(error);
         }
         self.main.set_system_frame(on);
+        self.mark_menus();
         for view in self.ticket_windows.borrow().values() {
             view.window.set_system_frame(on);
         }
