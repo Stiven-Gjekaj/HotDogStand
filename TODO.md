@@ -16,77 +16,82 @@ commits, and each commit does one thing.
 
 ### The skeleton
 
-- [ ] `pyproject.toml`, the `hotdogstand` package, and an empty `cli.py`
-- [ ] ruff and pytest, and a CI workflow that runs them on Linux, macOS, and
-      Windows
-- [ ] `config.py`, which reads the settings and refuses a setting it does not
-      know
+- [ ] The workspace `Cargo.toml`, `rust-toolchain.toml`, and the three crates
+- [ ] A Slint window that opens and closes
+- [ ] A CI workflow that runs `cargo fmt --check`, `cargo clippy`, and
+      `cargo test` on Linux, macOS, and Windows
 
-### The database
+### The rules
 
-- [ ] The models: user, session, ticket, label, ticket_label, comment, event,
-      setting
-- [ ] The first Alembic migration, and `hotdogstand migrate`
-- [ ] A test that runs every migration and compares the result with the models
+- [ ] The ticket, its status, and its priority in `hds-core`
+- [ ] The events, and the rule that makes an event from each change
+- [ ] Sort and filter in `hds-core::query`
 
-### Accounts
+### The store
 
-- [ ] Hash and verify a password with Argon2id
-- [ ] `hotdogstand create-user`, with `--admin`
-- [ ] Log in, log out, and the session cookie
-- [ ] The CSRF token on each form
-- [ ] The "Users" window: an admin makes, deactivates, and activates a user
-
-### Tickets
-
+- [ ] Open the workspace file in the data directory, and make it when it is
+      not there
+- [ ] The first migration: person, ticket, label, ticket_label, comment,
+      event, setting
+- [ ] A test that runs every migration on an empty database
 - [ ] Create a ticket, with an event
 - [ ] Edit the title, the description, and the priority, with an event for
       each change
 - [ ] Assign and unassign
 - [ ] Close and reopen
-- [ ] Add and remove a label, and the "Labels" window to make labels
+- [ ] Add and remove a label
 - [ ] Add and edit a comment
-- [ ] Markdown, with unsafe HTML removed
+- [ ] Add, rename, hide, and show a person
 
-### The list view
+### The controls
 
-- [ ] The list of tickets, with no sort and no filter
-- [ ] Sort by each column, from the address
-- [ ] Filter by status, priority, assignee, and label, from the address
-- [ ] Search the title
-- [ ] htmx replaces the list and not the page
+- [ ] `theme.slint` with the Aero theme
+- [ ] Selawik, with its licence
+- [ ] The window frame and the title bar, with move and resize
+- [ ] The setting that uses the frame of the system
+- [ ] Push button, text field, multi-line text field, combo box
+- [ ] List view with column headers that sort
+- [ ] Tabs, menu bar, toolbar, status bar
 
-### The desktop
+### The windows
 
-- [ ] Vendor 7.css with its licence
-- [ ] The desktop, the taskbar, and the start menu in `base.html` and
-      `app.css`
-- [ ] `windows.js`: open, move, focus, minimize, and close a window
-- [ ] The detail window, with the tabs "General" and "History"
-- [ ] The full page for each window when the browser runs no script
-- [ ] Keyboard: Tab, Enter, and Escape
+- [ ] The ticket list window, with the toolbar that filters
+- [ ] The ticket window, with the tabs "General" and "History"
+- [ ] Markdown in the description and the comments
+- [ ] More than one ticket window open at the same time
+- [ ] The People window and the Labels window
+- [ ] The About window, with the credit to Slint
+- [ ] Keyboard: Tab, Enter, Escape, and access keys in the menus
 - [ ] The "Hot Dog Stand" theme
-- [ ] The icons
+- [ ] The icons, and the icon of the application on each system
+
+### Export
+
+- [ ] Export to JSON, with `format` and `version` at the top
+- [ ] Export to CSV, with the sort and the filter of the list view
+- [ ] "File > Export" with the file dialog of the system
+- [ ] A test that exports, reads the file back, and compares
 
 ### The release
 
 - [ ] A screenshot in the readme
-- [ ] Measure the time to start, and the time for the list with 10,000
-      tickets, and write the numbers here
+- [ ] Measure the time to open the application, and the time to sort and
+      filter 10,000 tickets, and write the numbers here
+- [ ] Build a binary for Windows, macOS, and Linux in the CI
 - [ ] Tag `v0.1.0`
 
 ## After the first version
 
 Each of these waits for a person who needs it. A feature that nobody uses rots.
 
-- [ ] More than one workspace. One team is the first user.
-- [ ] Log in with OAuth or LDAP. A small team can make its accounts by hand.
-- [ ] E-mail notices. This needs an SMTP setting and a queue, and the first
-      version has neither.
-- [ ] Attachments. This needs a directory for files, a limit on size, and a
-      check on the type.
-- [ ] A public JSON API. The routes return HTML first. The services are ready
-      for an API when one is necessary.
-- [ ] PostgreSQL. SQLAlchemy makes this possible. SQLite is enough for one
-      team.
-- [ ] A Docker image.
+- [ ] Import of a JSON export. The format is ready for it. The import must
+      refuse a file with a version that it does not know.
+- [ ] More than one workspace file, with "File > Open".
+- [ ] A password for the workspace file. This needs SQLCipher and a way to
+      recover a lost password, and the first version has neither.
+- [ ] Attachments. This needs a directory beside the workspace file, a limit
+      on size, and a place in the export.
+- [ ] Packages for Homebrew, Scoop, and winget.
+
+Live sharing, sync, and a server are not planned. HotDogStand is a local
+application. A team that wants to share the tickets sends an export.
