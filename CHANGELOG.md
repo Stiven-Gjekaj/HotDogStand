@@ -5,8 +5,9 @@
 # Changelog
 
 Every release is written here, newest first. A version is `MAJOR.MINOR.PATCH`.
-A change to the schema of the database, or to a setting, raises the minor
-number while the major number is 0.
+A change to the schema of the workspace file, or to the export format, raises
+the minor number while the major number is 0. A new release always opens a
+workspace file from an older one.
 
 ## Unreleased
 
