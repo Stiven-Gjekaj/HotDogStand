@@ -33,7 +33,7 @@ No account, no server, and no network means that nothing can stop this.
 | Migrations | `rusqlite_migration` | Each change to the schema is a step in the repository. |
 | Data directory | `directories` | It finds the correct directory for the data on each operating system. |
 | Export | `serde`, `serde_json`, `csv` | JSON for a full copy. CSV for a spreadsheet. |
-| Markdown | `pulldown-cmark` | The description and the comments use Markdown. |
+| Markdown | `pulldown-cmark`, not added yet | The description and the comments use Markdown. They show as plain text until this is built. |
 | Time | `jiff` | Timestamps in UTC, shown in the local time zone. |
 | Errors | `thiserror` in the libraries, `anyhow` in the binary | The same as the other projects of the maintainer. |
 | Lint and format | `cargo fmt`, `cargo clippy` | |
@@ -166,7 +166,7 @@ The primary key of `ticket_label` is the two columns together.
 | ------ | ---- | ---- |
 | id | integer | primary key |
 | ticket_id | integer | references ticket |
-| kind | text | `created`, `edited`, `assigned`, `status`, `priority`, `labeled`, `unlabeled` |
+| kind | text | `created`, `title`, `description`, `status`, `priority`, `assigned`, `labeled`, `unlabeled` |
 | old_value | text | can be empty |
 | new_value | text | can be empty |
 | created_at | text | |
@@ -184,7 +184,14 @@ ticket.
 | key | text | primary key |
 | value | text | |
 
-The first keys are `workspace_name` and `theme`.
+The keys are:
+
+| Key | Values |
+| --- | ------ |
+| `workspace_name` | the name in the title bar of the main window |
+| `theme` | `aero` or `hot-dog-stand` |
+| `dark` | `true` or `false` |
+| `system_frame` | `true` when the system draws the window frames |
 
 ## Export
 
@@ -206,26 +213,32 @@ that an import can read it without loss.
 
 ## The windows
 
-- **The ticket list** is the main window. It has a menu bar, a toolbar, the
-  list view, and a status bar with the number of tickets.
+- **The ticket list** is the main window. It has a command bar like the one
+  of Explorer, a row of filters, the list view, and a status bar with the
+  number of tickets.
 - A click on a column header sorts by that column. A second click turns the
   order around.
-- The toolbar filters by status, priority, assignee, and label, and has a
-  search field for the title.
+- The row of filters filters by status, priority, assignee, and label, and
+  has a search field for the title or the number.
 - A double click or Enter on a row opens the ticket in its own window. More
   than one ticket can be open at the same time. Each one is a real window of
   the operating system, with its own button on the taskbar of the system.
 - **The ticket window** has the tabs "General", for the fields, and
   "History", for the comments and the events.
-- **People** and **Labels** are small windows from the "Edit" menu.
+- **People** and **Labels** are small windows from the command bar.
+- "Options" in the command bar chooses the theme, dark mode, and the frame of
+  the system.
+- On macOS, the same actions are also in the menu bar of the system: File,
+  Workspace, View, and Help. View holds the settings, with a check mark on
+  each one that is on.
 - **About** names the version, the licence, and Slint.
 
 ## Styling
 
 - The project draws its own set of Aero controls in `ui/aero/`: the window
   frame, the title bar and its buttons, the push button, the list view with
-  column headers, the tabs, the text field, the combo box, the menu, and the
-  status bar.
+  column headers, the scroll bar, the tabs, the text field, the check box,
+  the combo box, the menu, the command bar, and the status bar.
 - Each window has no frame from the system. `ui/aero/frame.slint` draws the
   glass frame and the title bar, and the Rust code asks the system to move or
   resize the window when the person drags it. A setting turns this off and
@@ -235,14 +248,19 @@ that an import can read it without loss.
   global and nothing else. The first theme is "Aero". The second is "Hot Dog
   Stand", the red and yellow scheme of Windows 3.1, which gives the project
   its name.
-- The font is Selawik, which Microsoft publishes under the SIL Open Font
-  Licence as an open replacement for Segoe UI. The project ships it with its
-  licence. It does not ship Segoe UI, because the licence of Segoe UI does not
-  permit that.
+- Each theme has a light form and a dark form. Windows 7 had no dark mode, so
+  the dark form of Aero keeps the shapes and the gloss, and makes the glass a
+  dark slate.
+- The font is Segoe UI when the computer has it, and the font of the system
+  when it does not. The plan is to ship Selawik, which Microsoft publishes
+  under the SIL Open Font Licence as an open replacement for Segoe UI. The
+  project does not ship Segoe UI, because its licence does not permit that.
 - The project draws its own icons, or takes them from a set with an open
   licence. It uses no icon, wallpaper, logo, or sound from Windows.
-- Keyboard use works: Tab moves between the controls, Enter opens a ticket,
-  Escape closes a ticket window, and the menus have access keys.
+- Keyboard use works: Tab moves between the controls, the arrow keys move in
+  the list, Enter opens a ticket, and Escape closes a ticket window.
+- Each control has an accessible role and label, so a screen reader can read
+  the windows and a test can drive them.
 
 ## Slint and the licence
 
