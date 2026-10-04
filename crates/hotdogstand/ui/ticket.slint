@@ -133,6 +133,9 @@ export component TicketWindow inherits Window {
     preferred-height: 560px;
     min-width: 460px;
     min-height: 420px;
+    // The keys of the window reach its shortcuts before a control has the
+    // focus.
+    forward-focus: keys;
 
     AeroFrame {
         title: root.title;
@@ -144,7 +147,20 @@ export component TicketWindow inherits Window {
         close => { root.cancel(); }
         start-resize(edge) => { root.start-resize(edge); }
 
-        FocusScope {
+        keys := FocusScope {
+            capture-key-pressed(event) => {
+                if event.modifiers.control || event.modifiers.meta {
+                    if (event.text == "s" || event.text == "S") && !root.is-new {
+                        root.save(false);
+                        return accept;
+                    }
+                    if event.text == Key.Return {
+                        root.save(true);
+                        return accept;
+                    }
+                }
+                reject
+            }
             key-pressed(event) => {
                 if event.text == Key.Escape {
                     root.cancel();

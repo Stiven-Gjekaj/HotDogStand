@@ -172,114 +172,139 @@ export component MainWindow inherits Window {
         }
     }
 
-    AeroFrame {
-        title: root.title;
-        icon: root.icon;
-        system-frame: root.system-frame;
-        maximized: root.is-maximized;
-        minimize => { root.minimize(); }
-        toggle-maximize => { root.toggle-maximize(); }
-        close => { root.close-window(); }
-        start-resize(edge) => { root.start-resize(edge); }
+    forward-focus: list;
 
-        CommandBar {
-            CommandButton {
-                text: "New ticket";
-                clicked => { root.new-ticket(); }
+    keys := FocusScope {
+        capture-key-pressed(event) => {
+            // Access keys, as in Windows: Alt and the first letter of a
+            // command.
+            if event.modifiers.alt && !event.modifiers.control && !event.modifiers.meta {
+                if event.text == "n" || event.text == "N" { root.new-ticket(); return accept; }
+                if event.text == "e" || event.text == "E" { export-menu.show(); return accept; }
+                if event.text == "p" || event.text == "P" { root.show-people(); return accept; }
+                if event.text == "l" || event.text == "L" { root.show-labels(); return accept; }
+                if event.text == "o" || event.text == "O" { options-menu.show(); return accept; }
+                if event.text == "a" || event.text == "A" { root.show-about(); return accept; }
             }
-            export-button := CommandButton {
-                text: "Export";
-                has-menu: true;
-                clicked => { export-menu.show(); }
+            // Shortcuts with Control, or with Command on macOS. The menu
+            // bar of macOS holds its own shortcuts, so only the ones that it
+            // does not have are here.
+            if (event.modifiers.control && !root.native-menu) || (event.modifiers.meta && root.native-menu) {
+                if event.text == "f" || event.text == "F" { search.focus(); return accept; }
+                if !root.native-menu && (event.text == "n" || event.text == "N") { root.new-ticket(); return accept; }
             }
-            CommandButton {
-                text: "People";
-                clicked => { root.show-people(); }
-            }
-            CommandButton {
-                text: "Labels";
-                clicked => { root.show-labels(); }
-            }
-            Rectangle { horizontal-stretch: 1; }
-            options-button := CommandButton {
-                text: "Options";
-                has-menu: true;
-                clicked => { options-menu.show(); }
-            }
-            CommandButton {
-                text: "About";
-                clicked => { root.show-about(); }
-            }
+            reject
         }
 
-        InfoBar {
-            text <=> root.error;
-        }
+        AeroFrame {
+            title: root.title;
+            icon: root.icon;
+            system-frame: root.system-frame;
+            maximized: root.is-maximized;
+            minimize => { root.minimize(); }
+            toggle-maximize => { root.toggle-maximize(); }
+            close => { root.close-window(); }
+            start-resize(edge) => { root.start-resize(edge); }
 
-        HorizontalLayout {
-            padding-left: 8px;
-            padding-right: 8px;
-            padding-top: 7px;
-            padding-bottom: 7px;
-            spacing: 6px;
-            FieldLabel { text: "Show:"; }
-            ComboBox {
-                width: 150px;
-                model: root.status-choices;
-                current-index <=> root.status-filter;
-                selected => { root.filter-changed(); }
+            CommandBar {
+                CommandButton {
+                    text: "New ticket";
+                    clicked => { root.new-ticket(); }
+                }
+                export-button := CommandButton {
+                    text: "Export";
+                    has-menu: true;
+                    clicked => { export-menu.show(); }
+                }
+                CommandButton {
+                    text: "People";
+                    clicked => { root.show-people(); }
+                }
+                CommandButton {
+                    text: "Labels";
+                    clicked => { root.show-labels(); }
+                }
+                Rectangle { horizontal-stretch: 1; }
+                options-button := CommandButton {
+                    text: "Options";
+                    has-menu: true;
+                    clicked => { options-menu.show(); }
+                }
+                CommandButton {
+                    text: "About";
+                    clicked => { root.show-about(); }
+                }
             }
-            ComboBox {
-                width: 110px;
-                model: root.priority-choices;
-                current-index <=> root.priority-filter;
-                selected => { root.filter-changed(); }
-            }
-            FieldLabel { text: "Assigned to:"; }
-            ComboBox {
-                width: 120px;
-                model: root.assignee-choices;
-                current-index <=> root.assignee-filter;
-                selected => { root.filter-changed(); }
-            }
-            FieldLabel { text: "Label:"; }
-            ComboBox {
-                width: 110px;
-                model: root.label-choices;
-                current-index <=> root.label-filter;
-                selected => { root.filter-changed(); }
-            }
-            Rectangle { horizontal-stretch: 1; }
-            TextField {
-                width: 200px;
-                placeholder: "Search titles or #number";
-                text <=> root.search;
-                edited => { root.filter-changed(); }
-            }
-        }
 
-        Rectangle {
-            height: 1px;
-            background: Theme.separator;
-        }
+            InfoBar {
+                text <=> root.error;
+            }
 
-        list := DetailsList {
-            vertical-stretch: 1;
-            rows: root.rows;
-            titles: ["#", "Title", "Status", "Priority", "Assigned to", "Labels", "Updated"];
-            widths <=> root.widths;
-            sort-column: root.sort-column;
-            sort-descending: root.sort-descending;
-            current <=> root.current;
-            labels-column: 5;
-            priority-column: 3;
-            empty-text: "No ticket matches. Change the filter, or make a new ticket.";
-            sort(c) => { root.sort(c); }
-            activate(i) => { root.open-ticket(i); }
-        }
+            HorizontalLayout {
+                padding-left: 8px;
+                padding-right: 8px;
+                padding-top: 7px;
+                padding-bottom: 7px;
+                spacing: 6px;
+                FieldLabel { text: "Show:"; }
+                ComboBox {
+                    width: 150px;
+                    model: root.status-choices;
+                    current-index <=> root.status-filter;
+                    selected => { root.filter-changed(); }
+                }
+                ComboBox {
+                    width: 110px;
+                    model: root.priority-choices;
+                    current-index <=> root.priority-filter;
+                    selected => { root.filter-changed(); }
+                }
+                FieldLabel { text: "Assigned to:"; }
+                ComboBox {
+                    width: 120px;
+                    model: root.assignee-choices;
+                    current-index <=> root.assignee-filter;
+                    selected => { root.filter-changed(); }
+                }
+                FieldLabel { text: "Label:"; }
+                ComboBox {
+                    width: 110px;
+                    model: root.label-choices;
+                    current-index <=> root.label-filter;
+                    selected => { root.filter-changed(); }
+                }
+                Rectangle { horizontal-stretch: 1; }
+                search := TextField {
+                    width: 200px;
+                    placeholder: "Search titles or #number";
+                    text <=> root.search;
+                    edited => { root.filter-changed(); }
+                }
+            }
 
-        StatusBar {
-            text: root.status-text;
+            Rectangle {
+                height: 1px;
+                background: Theme.separator;
+            }
+
+            list := DetailsList {
+                vertical-stretch: 1;
+                rows: root.rows;
+                titles: ["#", "Title", "Status", "Priority", "Assigned to", "Labels", "Updated"];
+                widths <=> root.widths;
+                sort-column: root.sort-column;
+                sort-descending: root.sort-descending;
+                current <=> root.current;
+                labels-column: 5;
+                priority-column: 3;
+                empty-text: "No ticket matches. Change the filter, or make a new ticket.";
+                sort(c) => { root.sort(c); }
+                activate(i) => { root.open-ticket(i); }
+            }
+
+            StatusBar {
+                text: root.status-text;
+            }
         }
     }
 }
