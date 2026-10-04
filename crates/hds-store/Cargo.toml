@@ -10,6 +10,11 @@ publish = false
 
 [dependencies]
 hds-core.workspace = true
+directories.workspace = true
+jiff.workspace = true
+rusqlite.workspace = true
+rusqlite_migration.workspace = true
+thiserror.workspace = true
 
 [lints]
 workspace = true
