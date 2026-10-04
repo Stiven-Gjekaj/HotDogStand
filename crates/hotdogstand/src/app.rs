@@ -111,6 +111,9 @@ pub struct App {
     /// negative key.
     ticket_windows: RefCell<HashMap<i64, TicketView>>,
     next_new_key: Cell<i64>,
+    /// The step of the next ticket window down and to the right of the main
+    /// window, so that two windows do not open at one place.
+    cascade: Cell<u8>,
     people_window: RefCell<Option<PeopleWindow>>,
     labels_window: RefCell<Option<LabelsWindow>>,
     about_window: RefCell<Option<AboutWindow>>,
@@ -178,6 +181,7 @@ impl App {
             label_filters: RefCell::default(),
             ticket_windows: RefCell::default(),
             next_new_key: Cell::new(-1),
+            cascade: Cell::new(0),
             people_window: RefCell::default(),
             labels_window: RefCell::default(),
             about_window: RefCell::default(),
@@ -548,6 +552,7 @@ impl App {
             },
         );
         self.fill_ticket(key);
+        self.place(window.window());
         if let Err(error) = window.show() {
             self.report(error);
         }
@@ -595,6 +600,21 @@ impl App {
                 app.save_ticket(key, then_close);
             }
         });
+    }
+
+    /// Puts a new window down and to the right of the main window, one step
+    /// further than the window before it. After eight steps it starts again.
+    fn place(&self, window: &slint::Window) {
+        const STEPS: u8 = 8;
+        let step = self.cascade.get();
+        self.cascade.set((step + 1) % STEPS);
+        let origin = self.main.window().position();
+        let scale = self.main.window().scale_factor();
+        let offset = (f32::from(step + 1) * 32.0 * scale) as i32;
+        window.set_position(slint::PhysicalPosition::new(
+            origin.x + offset,
+            origin.y + offset,
+        ));
     }
 
     /// Puts the data of the ticket into its window.
