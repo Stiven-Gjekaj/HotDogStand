@@ -97,7 +97,7 @@ A step marked "built, not tried" has code but nobody used it by hand yet.
 
 ## Measurements
 
-Measured on a MacBook with an M-series processor, with a release build and a
+Measured on a Mac with an Apple M5 processor, with a release build and a
 workspace of 10,000 tickets that `examples/measure.rs` makes. Run it again
 with:
 
