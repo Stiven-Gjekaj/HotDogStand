@@ -28,6 +28,8 @@ _One native window, one SQLite file, no server, no account_
 
 > [!NOTE]
 > **The first version is in progress.**
+> The application opens, keeps your tickets, and exports them. Some steps
+> are left, such as Markdown and the release builds.
 > [TODO.md](TODO.md) shows each step and which steps are done.
 > [docs/architecture.md](docs/architecture.md) holds the plan and the reason
 > for each decision.
@@ -72,15 +74,14 @@ Windows 3.1. HotDogStand ships it as a theme.
 - A list view that sorts by each column and filters by each field
 - A window for each ticket, with its own button on the taskbar
 - Glass frames, Aero controls, and the Selawik font
-- Two themes: Aero, and Hot Dog Stand
+- Two themes, Aero and Hot Dog Stand, each with a dark form
+- On macOS, the menus are in the menu bar of the system
 
 </td>
 </tr>
 </table>
 
 ## Quick Start
-
-This section shows the plan. The commands do not work yet.
 
 You need [Rust](https://rustup.rs). The repository pins the version of the
 toolchain, and `rustup` installs it.
