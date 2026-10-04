@@ -4,22 +4,22 @@
 
 # Contributing to HotDogStand
 
-Thank you for your interest. HotDogStand is a ticket manager for a small team,
-with the look of Windows 7. Reports of a fault, corrections to the documents,
-and new code are all welcome.
+Thank you for your interest. HotDogStand is a ticket manager on your own
+computer, with the look of Windows 7. Reports of a fault, corrections to the
+documents, and new code are all welcome.
 
 ## What this project is, and what it is not
 
-HotDogStand is for one team in one workspace. It runs as one process with one
-SQLite file. This is on purpose. A small team must be able to install it in a
-few minutes and back it up with a copy of one file.
+HotDogStand is a native desktop application that keeps its data in one
+SQLite file on the computer that runs it. This is on purpose. A person must be
+able to install it and work, with no account, no server, and no network.
 
-A change that adds a second service, such as a queue, a cache server, or a
-JavaScript build, goes the wrong way. A pull request that does it needs a
-reason.
+A change that adds a server, a network connection, sync, or a webview goes the
+wrong way. Live sharing is not planned. A person who wants to share tickets
+sends an export.
 
 The look is Windows 7. A change to the look must fit that look. A modern flat
-control in the middle of a 7.css window is a fault.
+control in the middle of an Aero window is a fault.
 
 ## Ways to help
 
@@ -32,53 +32,56 @@ way to do it before you write it.
 
 ## Development setup
 
-You need `uv`. Then:
+You need `rustup`. The repository pins the toolchain in
+`rust-toolchain.toml`, and `rustup` installs it the first time you build.
 
     git clone https://github.com/Stiven-Gjekaj/HotDogStand
     cd HotDogStand
-    uv sync
+    cargo run
+
+On Linux, Slint needs the development files of fontconfig and xkbcommon:
+
+    sudo apt install libfontconfig-dev libxkbcommon-dev
 
 Run the tests:
 
-    uv run pytest
+    cargo test
 
-Start the server with a database for development:
-
-    uv run hotdogstand migrate
-    uv run hotdogstand create-user --admin
-    uv run hotdogstand serve --reload
+To work on a copy of the data that is not your real workspace, set
+`HOTDOGSTAND_WORKSPACE` to the path of another file.
 
 ## Where a change lives
 
 | Change | Files |
 | ------ | ----- |
-| A rule about a ticket | `src/hotdogstand/tickets/service.py` and its tests |
-| A new sort or filter | `src/hotdogstand/tickets/query.py` |
-| A new column or table | `src/hotdogstand/db/models.py` and a new migration in `db/migrations/` |
-| A window | `src/hotdogstand/web/templates/windows/` |
-| The look of the desktop | `src/hotdogstand/web/static/css/app.css` |
-| A theme | the custom properties at the top of `app.css` |
-| A new command | `src/hotdogstand/cli.py` and `tests/test_cli.py` |
-
-Do not edit `7.css`. It is a copy of a project of another person. A fix to it
-goes to that project first.
+| A rule about a ticket | `crates/hds-core/src/ticket.rs` and its tests |
+| A new sort or filter | `crates/hds-core/src/query.rs` |
+| An export format | `crates/hds-core/src/export.rs` |
+| A new column or table | a new step in `crates/hds-store/src/migrations.rs` |
+| A control | `crates/hotdogstand/ui/aero/` |
+| A window | `crates/hotdogstand/ui/` and `crates/hotdogstand/src/windows/` |
+| A color or a size | `crates/hotdogstand/ui/theme.slint` |
 
 ## Rules that this project holds to
 
 - **Code and its tests go in one commit. Documents go in their own.**
 - **A commit carries no version prefix and changes no version.** The version in
-  `pyproject.toml` moves only when something is released.
-- **Each change to the schema is a migration.** Do not change a migration that
-  is in a release. Add a new one.
-- **A rule lives in a service, not in a route.** A route reads the request and
-  returns a page. A test of a rule does not start a server.
-- **An error that a person can correct is a `HotDogStandError`.** It says what
-  to change. An error that a person cannot correct stays an ordinary exception
-  and keeps its traceback.
-- **A setting that nothing reads is an error.** A misspelled variable that the
-  server ignores lies about what the server does.
-- **Each page works with no script.** The script makes the desktop better. It
-  does not hold a feature.
+  `Cargo.toml` moves only when something is released.
+- **Each change to the schema is a new migration step.** Do not change a step
+  that is in a release. Add a new one. A workspace file from an old release
+  must open in a new one.
+- **A rule lives in `hds-core`.** It knows nothing about SQLite or Slint. A
+  test of a rule opens no file and no window.
+- **A change and its event go in one transaction.** The history must agree
+  with the data.
+- **A change to the export format raises its version.** An old export must
+  stay readable.
+- **An error that a person can correct says what to change.** It names the
+  field or the file. An error that a person cannot correct keeps its cause.
+- **No `unwrap` outside the tests.** A fault in the data must not close the
+  application and lose the work of the person.
+- **A color or a size goes in `theme.slint`.** A control that holds its own
+  color breaks the second theme.
 - **Run it. Do not conclude that it works.** Say so plainly when a measurement
   does not support the conclusion.
 
@@ -86,14 +89,16 @@ goes to that project first.
 
 Run these, exactly as the workflow does:
 
-    uv run ruff format --check .
-    uv run ruff check .
-    uv run pytest
+    cargo fmt --check
+    cargo clippy --all-targets -- -D warnings
+    cargo test
 
-Add tests for what you change. A test builds the users, the tickets, and the
-labels that it needs. It does not read them from a file that a person edits.
+Add tests for what you change. A test builds the people, the tickets, and the
+labels that it needs in a database in memory. It does not read them from a
+file that a person edits.
 
-For a change to the look, add a screenshot to the pull request.
+For a change to the look, add a screenshot to the pull request, in the Aero
+theme and in the Hot Dog Stand theme.
 
 ## Style
 
