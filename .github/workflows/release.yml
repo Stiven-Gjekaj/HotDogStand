@@ -1,0 +1,119 @@
+# Builds the application for Windows, macOS, and Linux, and puts the files on
+# a GitHub release.
+#
+# A tag such as v0.1.0 makes the release, with the notes of that version from
+# CHANGELOG.md. A run by hand builds the same files and keeps them as
+# artifacts of the run, with no release.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - name: Build
+        run: cargo build --release --locked -p hotdogstand
+      - name: Package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path dist/HotDogStand | Out-Null
+          Copy-Item target/release/hotdogstand.exe dist/HotDogStand/HotDogStand.exe
+          Copy-Item LICENSE, TERMS.md, README.md dist/HotDogStand/
+          Compress-Archive -Path dist/HotDogStand -DestinationPath dist/HotDogStand-windows-x86_64.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: dist/HotDogStand-windows-x86_64.zip
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add the Intel target
+        run: rustup target add x86_64-apple-darwin
+      - uses: Swatinem/rust-cache@v2
+      - name: Build for Apple silicon and for Intel
+        run: |
+          cargo build --release --locked -p hotdogstand --target aarch64-apple-darwin
+          cargo build --release --locked -p hotdogstand --target x86_64-apple-darwin
+      # One binary that runs on both kinds of Mac.
+      - name: Join the two binaries
+        run: |
+          lipo -create -output target/release-universal \
+            target/aarch64-apple-darwin/release/hotdogstand \
+            target/x86_64-apple-darwin/release/hotdogstand
+          lipo -info target/release-universal
+      - name: Bundle
+        run: BINARY=target/release-universal ./scripts/bundle-macos.sh
+      - name: Package
+        run: |
+          mkdir -p dist
+          ditto -c -k --keepParent target/release/HotDogStand.app dist/HotDogStand-macos-universal.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: dist/HotDogStand-macos-universal.zip
+
+  linux:
+    # An older Ubuntu gives a binary that runs on more distributions, because
+    # it links to an older glibc.
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the libraries
+        run: sudo apt-get update && sudo apt-get install -y libfontconfig-dev libxkbcommon-dev
+      - uses: Swatinem/rust-cache@v2
+      - name: Build
+        run: cargo build --release --locked -p hotdogstand
+      - name: Package
+        run: |
+          root=dist/HotDogStand-linux-x86_64
+          mkdir -p "$root/scripts" "$root/packaging/linux" "$root/assets/icons"
+          cp target/release/hotdogstand "$root/"
+          cp scripts/install-linux.sh "$root/scripts/"
+          cp packaging/linux/hotdogstand.desktop "$root/packaging/linux/"
+          cp -R assets/icons/png "$root/assets/icons/"
+          cp assets/hotdogstand.svg "$root/assets/"
+          cp LICENSE TERMS.md README.md "$root/"
+          tar -C dist -czf dist/HotDogStand-linux-x86_64.tar.gz HotDogStand-linux-x86_64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: dist/HotDogStand-linux-x86_64.tar.gz
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [windows, macos, linux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      # The notes are the section of CHANGELOG.md for this version.
+      - name: Write the notes
+        run: |
+          version=${GITHUB_REF_NAME#v}
+          awk -v v="$version" '
+            $0 ~ "^## " v "( |$)" { found = 1; next }
+            found && /^## / { exit }
+            found { print }
+          ' CHANGELOG.md > notes.md
+          test -s notes.md
+      - name: Make the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --title "HotDogStand $GITHUB_REF_NAME" \
+            --notes-file notes.md
