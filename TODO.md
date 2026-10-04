@@ -44,14 +44,13 @@ A step marked "built, not tried" has code but nobody used it by hand yet.
 - Close and reopen
 - Add and remove a label
 - Add a comment
-- [ ] Edit a comment in the History tab. The store can do it. The window
-      cannot yet.
+- Edit a comment in the History tab
 - Add, rename, hide, and show a person
 
 ### The controls
 
 - `theme.slint` with the Aero theme
-- [ ] Selawik, with its licence
+- Selawik, with its licence
 - The window frame and the title bar, with move and resize
 - The setting that uses the frame of the system
 - Push button, text field, multi-line text field, combo box
@@ -62,34 +61,65 @@ A step marked "built, not tried" has code but nobody used it by hand yet.
 
 - The ticket list window, with the row of filters
 - The ticket window, with the tabs "General" and "History"
-- [ ] Markdown in the description and the comments
-- [ ] More than one ticket window open at the same time: built, not tried
+- Markdown in the description and the comments, with the `StyledText` of
+  Slint
+- More than one ticket window open at the same time, each one a step below
+  the one before it
 - The People window and the Labels window
 - The About window, with the credit to Slint
 - Keyboard: Tab, the arrow keys in the list, Enter, and Escape
-- [ ] Access keys in the command bar and the Options menu
-- [ ] The tabs as accessible elements, so a screen reader can change them
+- Access keys: Alt and the first letter of each command of the command bar
+- Shortcuts: Ctrl+N or Command+N for a new ticket, Ctrl+F or Command+F for
+  the search, and Ctrl+S, Command+S, Ctrl+Enter, or Command+Enter in a ticket
+  window
+- Accessible roles for the rows, the headers, the tabs, and the controls
 - The "Hot Dog Stand" theme
 - A dark form of each theme
 - The menus in the menu bar of macOS, with a check mark on each setting
 - The icon of the application on each system: in the .exe file on Windows,
   in the app bundle on macOS, and in the desktop entry on Linux
-- [ ] Icons inside the windows, for the command bar and the menus
+- Icons inside the windows, for the command bar and the menus
 
 ### Export
 
 - Export to JSON, with `format` and `version` at the top
 - Export to CSV, with the sort and the filter of the list view
-- [ ] "Export" with the file dialog of the system: built, not tried
+- "Export" with the file dialog of the system, tried on macOS
 - A test that exports, reads the file back, and compares
 
 ### The release
 
-- [ ] A screenshot in the readme
-- [ ] Measure the time to open the application, and the time to sort and
-      filter 10,000 tickets, and write the numbers here
+- Screenshots in the readme, of the application with the demo workspace
+- Measure the time to open the application, and the time to sort and filter
+  10,000 tickets. The numbers are below.
 - [ ] Build a binary for Windows, macOS, and Linux in the CI
 - [ ] Tag `v0.1.0`
+
+## Measurements
+
+Measured on a MacBook with an M-series processor, with a release build and a
+workspace of 10,000 tickets that `examples/measure.rs` makes. Run it again
+with:
+
+    cargo run --release -p hds-store --example measure -- big.db
+    HOTDOGSTAND_TIMING=1 HOTDOGSTAND_WORKSPACE=big.db cargo run --release
+
+| What | Time |
+| ---- | ---- |
+| Open the file and read 10,000 tickets | 4.2 ms |
+| Start the application to its first frame | 146 to 195 ms, three runs |
+| Show the list after a change of the filter, in the application | 0.1 to 4.2 ms |
+| Sort 8,000 tickets by priority, in the query alone | 0.35 ms |
+| Sort 8,000 tickets by assignee, in the query alone | 2.8 ms |
+| Search the titles of 10,000 tickets for a word | 0.27 ms |
+
+## Known problems
+
+- [ ] On macOS, the menus of the menu bar show only while the main window
+      has the focus. A ticket window, the People window, and the Labels
+      window have no menu bar of their own.
+- [ ] Selawik has no italic face, so Markdown in italics shows upright.
+- [ ] A link in Markdown shows as a link, but a click on it does nothing.
 
 ## After the first version
 
