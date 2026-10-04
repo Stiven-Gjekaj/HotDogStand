@@ -6,9 +6,11 @@
 mod error;
 pub mod event;
 pub mod people;
+pub mod query;
 pub mod ticket;
 
 pub use error::Error;
 pub use event::{Edit, Event, EventKind, NewEvent, apply};
 pub use people::{Comment, Label, Person};
+pub use query::{AssigneeFilter, Column, Filter, Query, Sort, StatusFilter};
 pub use ticket::{NewTicket, Priority, Status, Ticket, Title};
