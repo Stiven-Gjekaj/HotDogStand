@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=HotDogStand
+GenericName=Ticket Manager
+Comment=A ticket manager on your own computer, with the look of Windows 7
+Exec=hotdogstand
+Icon=hotdogstand
+Terminal=false
+Categories=Office;ProjectManagement;
+StartupWMClass=hotdogstand

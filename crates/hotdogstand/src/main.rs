@@ -16,7 +16,14 @@ mod ui {
     slint::include_modules!();
 }
 
+/// The name that a Linux desktop uses to match the windows to
+/// `hotdogstand.desktop` and to its icon.
+const APP_ID: &str = "hotdogstand";
+
 fn main() -> anyhow::Result<()> {
+    if cfg!(target_os = "linux") {
+        slint::set_xdg_app_id(APP_ID)?;
+    }
     let path = hds_store::workspace_path()?;
     let store = match hds_store::Store::open(&path) {
         Ok(store) => store,
