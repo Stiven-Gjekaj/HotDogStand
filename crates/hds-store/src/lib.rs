@@ -5,6 +5,7 @@
 
 mod migrations;
 mod people;
+mod tickets;
 
 use std::path::{Path, PathBuf};
 
@@ -27,8 +28,6 @@ pub enum Error {
         "A newer version of HotDogStand changed this workspace file. Install the newer version to open it."
     )]
     NewerFile,
-    #[error("The workspace file holds a value that is not correct: {0}")]
-    BadValue(String),
     #[error(
         "The data directory of this system is not known. Set {WORKSPACE_VAR} to the path of the workspace file."
     )]
