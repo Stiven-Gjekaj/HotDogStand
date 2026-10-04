@@ -565,9 +565,24 @@ impl App {
         };
         window.on_cancel(call(App::close_ticket));
         window.on_add_comment(call(App::add_comment));
+        window.on_save_comment(call(App::save_comment));
+        window.on_cancel_comment(call(App::cancel_comment));
         window
             .global::<Markdown<'_>>()
             .on_render(|text| format::markdown(&text));
+        let weak = window.as_weak();
+        window.on_edit_comment(move |comment_id| {
+            let Some(window) = weak.upgrade() else { return };
+            let body = window
+                .get_history()
+                .iter()
+                .find(|e| e.is_comment && e.comment_id == comment_id)
+                .map(|e| e.text);
+            if let Some(body) = body {
+                window.set_comment_draft(body);
+                window.set_editing_comment(comment_id);
+            }
+        });
         window.on_close_or_reopen(call(App::close_or_reopen));
         let close = call(App::close_ticket);
         window.window().on_close_requested(move || {
@@ -813,6 +828,38 @@ impl App {
                 self.fill_ticket(key);
             }
             Err(error) => window.set_error(error.to_string().into()),
+        }
+    }
+
+    /// Saves the comment that the box below the history edits.
+    fn save_comment(&self, key: i64) {
+        let Some(window) = self
+            .ticket_windows
+            .borrow()
+            .get(&key)
+            .map(|v| v.window.clone_strong())
+        else {
+            return;
+        };
+        let id = i64::from(window.get_editing_comment());
+        let body = window.get_comment_draft().to_string();
+        let result = self.store.borrow_mut().edit_comment(id, &body);
+        match result {
+            Ok(_) => {
+                self.cancel_comment(key);
+                window.set_error(SharedString::new());
+                self.reload();
+                self.fill_ticket(key);
+            }
+            Err(error) => window.set_error(error.to_string().into()),
+        }
+    }
+
+    /// Empties the comment box and leaves the edit of a comment.
+    fn cancel_comment(&self, key: i64) {
+        if let Some(view) = self.ticket_windows.borrow().get(&key) {
+            view.window.set_comment_draft(SharedString::new());
+            view.window.set_editing_comment(0);
         }
     }
 

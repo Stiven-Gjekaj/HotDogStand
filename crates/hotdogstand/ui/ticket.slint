@@ -7,6 +7,7 @@ import { LabelChip, HistoryEntry, Markdown } from "types.slint";
 
 component HistoryItem inherits Rectangle {
     in property <HistoryEntry> entry;
+    callback edit(int);
 
     height: layout.preferred-height;
 
@@ -22,11 +23,27 @@ component HistoryItem inherits Rectangle {
             comment-layout := VerticalLayout {
                 padding: 7px;
                 spacing: 4px;
-                Text {
-                    text: root.entry.edited ? "Comment, \{root.entry.when} (edited)" : "Comment, \{root.entry.when}";
-                    color: Theme.muted-text;
-                    font-family: Theme.font-family;
-                    font-size: 11px;
+                HorizontalLayout {
+                    Text {
+                        text: root.entry.edited ? "Comment, \{root.entry.when} (edited)" : "Comment, \{root.entry.when}";
+                        color: Theme.muted-text;
+                        font-family: Theme.font-family;
+                        font-size: 11px;
+                        horizontal-stretch: 1;
+                    }
+                    Text {
+                        accessible-role: button;
+                        accessible-label: "Edit the comment";
+                        accessible-action-default => { root.edit(root.entry.comment-id); }
+                        text: "Edit";
+                        color: Theme.link;
+                        font-family: Theme.font-family;
+                        font-size: 11px;
+                        edit-touch := TouchArea {
+                            mouse-cursor: pointer;
+                            clicked => { root.edit(root.entry.comment-id); }
+                        }
+                    }
                 }
                 StyledText {
                     text: Markdown.render(root.entry.text);
@@ -80,6 +97,9 @@ export component TicketWindow inherits Window {
     in property <[HistoryEntry]> history;
     in property <string> dates-text;
     in-out property <string> comment-draft;
+    // The comment that the box below the history edits, or 0 for a new
+    // comment.
+    in-out property <int> editing-comment;
     in-out property <bool> preview;
     in-out property <string> error;
     in-out property <int> tab;
@@ -89,6 +109,9 @@ export component TicketWindow inherits Window {
     callback save(bool);
     callback cancel();
     callback add-comment();
+    callback edit-comment(int);
+    callback save-comment();
+    callback cancel-comment();
     // Sets the status to closed, or to open when it is closed, and saves.
     callback close-or-reopen();
 
@@ -276,6 +299,7 @@ export component TicketWindow inherits Window {
                                     spacing: 2px;
                                     for entry in root.history: HistoryItem {
                                         entry: entry;
+                                        edit(id) => { root.edit-comment(id); }
                                     }
                                 }
                             }
@@ -283,14 +307,25 @@ export component TicketWindow inherits Window {
                         TextArea {
                             height: 70px;
                             text <=> root.comment-draft;
-                            placeholder: "Write a comment. Markdown is fine.";
+                            placeholder: root.editing-comment == 0 ? "Write a comment. Markdown is fine." : "";
                         }
                         HorizontalLayout {
                             alignment: end;
+                            spacing: 7px;
+                            if root.editing-comment != 0: Button {
+                                text: "Cancel edit";
+                                clicked => { root.cancel-comment(); }
+                            }
                             Button {
-                                text: "Add comment";
+                                text: root.editing-comment == 0 ? "Add comment" : "Save comment";
                                 enabled: root.comment-draft != "";
-                                clicked => { root.add-comment(); }
+                                clicked => {
+                                    if root.editing-comment == 0 {
+                                        root.add-comment();
+                                    } else {
+                                        root.save-comment();
+                                    }
+                                }
                             }
                         }
                     }
