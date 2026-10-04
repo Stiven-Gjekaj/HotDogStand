@@ -27,10 +27,10 @@ _One native window, one SQLite file, no server, no account_
 ---
 
 > [!NOTE]
-> **The first version is in progress.**
-> The application opens, keeps your tickets, and exports them. Some steps
-> are left, such as Markdown and the release builds.
-> [TODO.md](TODO.md) shows each step and which steps are done.
+> **Version 0.1.0 is out.**
+> [Install](#install) says how to get it, and [CHANGELOG.md](CHANGELOG.md)
+> says what it holds.
+> [TODO.md](TODO.md) lists the known problems and the measurements.
 > [docs/architecture.md](docs/architecture.md) holds the plan and the reason
 > for each decision.
 
@@ -121,8 +121,27 @@ system. [docs/architecture.md](docs/architecture.md#data-model) says where.
 
 ## Install
 
-There are no release builds yet. Build the application, then install it in
-the way of your system, so that it has its icon and its name.
+Download the file for your system from the
+[latest release](https://github.com/Stiven-Gjekaj/HotDogStand/releases/latest).
+
+| System | File | Install |
+| ------ | ---- | ------- |
+| Windows | `HotDogStand-windows-x86_64.zip` | Unzip it and start `HotDogStand.exe`. |
+| macOS | `HotDogStand-macos-universal.zip` | Unzip it and move `HotDogStand.app` to `/Applications`. It runs on Apple silicon and on Intel. |
+| Linux | `HotDogStand-linux-x86_64.tar.gz` | Unpack it and run `scripts/install-linux.sh` in it. |
+
+The packages are not signed, so the system warns before the first start:
+
+- **Windows.** SmartScreen says that it protected your PC. Click "More info",
+  then "Run anyway".
+- **macOS.** Gatekeeper refuses to open the application. Open it once with a
+  right click and "Open", or run
+  `xattr -dr com.apple.quarantine /Applications/HotDogStand.app`.
+
+### Build it yourself
+
+Build the application, then install it in the way of your system, so that it
+has its icon and its name.
 
 | System | Command | Result |
 | ------ | ------- | ------ |
