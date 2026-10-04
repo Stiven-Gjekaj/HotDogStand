@@ -270,8 +270,7 @@ says this to the person who uses it.
 
 - Import of an export file.
 - More than one workspace file.
-- A password or encryption for the workspace file.
 - Attachments.
-- Live sharing, sync, or a server. These are not planned.
+- Live sharing, sync, a server, or a password. These are not planned.
 
 [TODO.md](../TODO.md) holds these, with the reason for each.

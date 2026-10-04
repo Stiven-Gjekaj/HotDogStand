@@ -87,11 +87,9 @@ Each of these waits for a person who needs it. A feature that nobody uses rots.
 - [ ] Import of a JSON export. The format is ready for it. The import must
       refuse a file with a version that it does not know.
 - [ ] More than one workspace file, with "File > Open".
-- [ ] A password for the workspace file. This needs SQLCipher and a way to
-      recover a lost password, and the first version has neither.
 - [ ] Attachments. This needs a directory beside the workspace file, a limit
       on size, and a place in the export.
 - [ ] Packages for Homebrew, Scoop, and winget.
 
-Live sharing, sync, and a server are not planned. HotDogStand is a local
+Live sharing, sync, a server, and a password are not planned. HotDogStand is a local
 application. A team that wants to share the tickets sends an export.
