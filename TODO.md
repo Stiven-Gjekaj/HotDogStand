@@ -72,7 +72,9 @@ A step marked "built, not tried" has code but nobody used it by hand yet.
 - The "Hot Dog Stand" theme
 - A dark form of each theme
 - The menus in the menu bar of macOS, with a check mark on each setting
-- [ ] The icons, and the icon of the application on each system
+- The icon of the application on each system: in the .exe file on Windows,
+  in the app bundle on macOS, and in the desktop entry on Linux
+- [ ] Icons inside the windows, for the command bar and the menus
 
 ### Export
 
