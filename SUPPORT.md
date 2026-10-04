@@ -34,7 +34,8 @@ Copy this file to make a backup. Close the application before you copy it.
 ## When the window frame behaves badly
 
 Some Linux desktops do not move or resize a window with no frame from the
-system. Turn on "Use the system frame" in "View > Options".
+system. Turn on "Use the system frame" in the "Options" menu of the main
+window. On macOS, it is also in the "View" menu.
 
 ## Ask a question or report a fault
 
