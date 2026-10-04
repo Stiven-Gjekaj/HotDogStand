@@ -20,11 +20,11 @@ export component Button inherits Rectangle {
     height: Theme.control-height;
     border-radius: Theme.control-radius;
     border-width: 1px;
-    border-color: !root.enabled ? #adb2b5
+    border-color: !root.enabled ? Theme.disabled-border
         : touch.pressed ? Theme.button-border-pressed
         : touch.has-hover || focus.has-focus || root.primary ? Theme.button-border-hover
         : Theme.button-border;
-    background: !root.enabled ? #f4f4f4
+    background: !root.enabled ? Theme.disabled-face
         : touch.pressed ? Theme.button-face-pressed
         : touch.has-hover ? Theme.button-face-hover
         : Theme.button-face;
@@ -37,7 +37,7 @@ export component Button inherits Rectangle {
         height: parent.height - 2px;
         border-radius: Theme.control-radius - 1px;
         border-width: 1px;
-        border-color: touch.pressed ? transparent : #ffffffb0;
+        border-color: touch.pressed ? transparent : Theme.button-inner-line;
     }
 
     // The ring of the focus, inside the button.
@@ -106,7 +106,7 @@ export component CommandButton inherits Rectangle {
         Text {
             text: root.text;
             color: !root.enabled ? Theme.disabled-text
-                : Theme.hds && touch.has-hover ? #000000
+                : touch.has-hover ? Theme.command-hover-text
                 : Theme.command-text;
             font-family: Theme.font-family;
             font-size: Theme.font-size;
@@ -119,7 +119,7 @@ export component CommandButton inherits Rectangle {
             viewbox-width: 7;
             viewbox-height: 4;
             commands: "M 0 0 L 7 0 L 3.5 4 Z";
-            fill: Theme.hds && !touch.has-hover ? #ffffff : Theme.command-text;
+            fill: touch.has-hover ? Theme.command-hover-text : Theme.command-text;
         }
     }
 
@@ -161,19 +161,8 @@ export component CheckBox inherits Rectangle {
             height: 13px;
             y: (parent.height - 13px) / 2;
             border-width: 1px;
-            border-color: touch.has-hover ? Theme.field-border-hover : #8e8f8f;
-            background: touch.has-hover
-                ? @linear-gradient(135deg, #def9fa 0%, #b1dff8 100%)
-                : @linear-gradient(135deg, #dcdcdc 0%, #ffffff 100%);
-            Rectangle {
-                x: 2px;
-                y: 2px;
-                width: 9px;
-                height: 9px;
-                background: touch.has-hover
-                    ? @linear-gradient(135deg, #b1dff8 0%, #ebf8fe 100%)
-                    : @linear-gradient(135deg, #cbcfd5 0%, #f7f7f7 100%);
-            }
+            border-color: touch.has-hover ? Theme.field-border-hover : Theme.check-border;
+            background: touch.has-hover ? Theme.check-face-hover : Theme.check-face;
             if root.checked: Path {
                 x: 2px;
                 y: 2px;
@@ -182,7 +171,7 @@ export component CheckBox inherits Rectangle {
                 viewbox-width: 9;
                 viewbox-height: 9;
                 commands: "M 1 4.5 L 3.5 7 L 8 1.5";
-                stroke: #4a5f97;
+                stroke: Theme.check-mark;
                 stroke-width: 2px;
                 fill: transparent;
             }

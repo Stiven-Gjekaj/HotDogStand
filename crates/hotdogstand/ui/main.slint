@@ -46,6 +46,7 @@ export component MainWindow inherits Window {
     callback show-about();
     callback set-theme(ThemeName);
     callback set-system-frame(bool);
+    callback set-dark(bool);
 
     callback minimize();
     callback toggle-maximize();
@@ -81,12 +82,14 @@ export component MainWindow inherits Window {
             { text: "Aero", checked: Theme.name == ThemeName.aero },
             { text: "Hot Dog Stand", checked: Theme.name == ThemeName.hot-dog-stand },
             { separator: true },
+            { text: "Dark mode", checked: Theme.dark },
             { text: "Use the system frame", checked: root.system-frame },
         ];
         activated(i) => {
             if i == 0 { root.set-theme(ThemeName.aero); }
             if i == 1 { root.set-theme(ThemeName.hot-dog-stand); }
-            if i == 3 { root.set-system-frame(!root.system-frame); }
+            if i == 3 { root.set-dark(!Theme.dark); }
+            if i == 4 { root.set-system-frame(!root.system-frame); }
         }
     }
 

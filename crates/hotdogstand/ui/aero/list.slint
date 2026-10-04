@@ -12,12 +12,12 @@ component Chip inherits Rectangle {
     height: 16px;
     width: chip-text.preferred-width + 12px;
     border-radius: 3px;
-    background: root.tint.with-alpha(0.18);
+    background: root.tint.with-alpha(Theme.dark ? 0.3 : 0.18);
     border-width: 1px;
     border-color: root.tint.with-alpha(0.7);
     chip-text := Text {
         text: root.text;
-        color: root.tint.darker(0.5);
+        color: Theme.dark ? root.tint.brighter(0.7) : root.tint.darker(0.5);
         font-family: Theme.font-family;
         font-size: 11px;
     }
@@ -103,7 +103,7 @@ export component DetailsList inherits Rectangle {
                         viewbox-width: 8;
                         viewbox-height: 4;
                         commands: root.sort-descending ? "M 0 0 L 4 4 L 8 0" : "M 0 4 L 4 0 L 8 4";
-                        stroke: Theme.hds ? #ffffff : #97a5b6;
+                        stroke: Theme.sort-arrow;
                         stroke-width: 1px;
                         fill: transparent;
                     }

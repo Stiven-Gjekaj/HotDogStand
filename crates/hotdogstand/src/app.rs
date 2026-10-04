@@ -115,15 +115,18 @@ pub struct App {
     labels_window: RefCell<Option<LabelsWindow>>,
     about_window: RefCell<Option<AboutWindow>>,
     theme: Cell<ThemeName>,
+    dark: Cell<bool>,
     system_frame: Cell<bool>,
 }
 
 /// Gives a window the theme of the application. Each window has its own copy
 /// of the `Theme` global, so each one needs this.
 macro_rules! style {
-    ($app:expr, $window:expr) => {
-        $window.global::<Theme<'_>>().set_name($app.theme.get())
-    };
+    ($app:expr, $window:expr) => {{
+        let theme = $window.global::<Theme<'_>>();
+        theme.set_name($app.theme.get());
+        theme.set_dark($app.dark.get());
+    }};
 }
 
 /// Wires the frame of a window to the frame actions, for each kind of window.
@@ -160,6 +163,7 @@ impl App {
             Some("hot-dog-stand") => ThemeName::HotDogStand,
             _ => ThemeName::Aero,
         };
+        let dark = store.setting("dark")?.as_deref() == Some("true");
         let system_frame = store.setting("system_frame")?.as_deref() == Some("true");
 
         let app = Rc::new(App {
@@ -178,6 +182,7 @@ impl App {
             labels_window: RefCell::default(),
             about_window: RefCell::default(),
             theme: Cell::new(theme),
+            dark: Cell::new(dark),
             system_frame: Cell::new(system_frame),
         });
         app.wire_main();
@@ -264,6 +269,12 @@ impl App {
         main.on_set_theme(move |theme| {
             if let Some(app) = weak.upgrade() {
                 app.set_theme(theme);
+            }
+        });
+        let weak = Rc::downgrade(self);
+        main.on_set_dark(move |on| {
+            if let Some(app) = weak.upgrade() {
+                app.set_dark(on);
             }
         });
         let weak = Rc::downgrade(self);
@@ -439,6 +450,20 @@ impl App {
         if let Err(error) = self.store.borrow().set_setting("theme", value) {
             self.report(error);
         }
+        self.restyle();
+    }
+
+    fn set_dark(&self, dark: bool) {
+        self.dark.set(dark);
+        let value = if dark { "true" } else { "false" };
+        if let Err(error) = self.store.borrow().set_setting("dark", value) {
+            self.report(error);
+        }
+        self.restyle();
+    }
+
+    /// Gives every open window the current theme.
+    fn restyle(&self) {
         style!(self, &self.main);
         for view in self.ticket_windows.borrow().values() {
             style!(self, &view.window);

@@ -31,10 +31,10 @@ export component ComboBox inherits Rectangle {
     min-width: 90px;
     border-radius: Theme.control-radius;
     border-width: 1px;
-    border-color: !root.enabled ? #adb2b5
+    border-color: !root.enabled ? Theme.disabled-border
         : touch.has-hover || focus.has-focus ? Theme.button-border-hover
         : Theme.button-border;
-    background: !root.enabled ? #f4f4f4
+    background: !root.enabled ? Theme.disabled-face
         : touch.pressed ? Theme.button-face-pressed
         : touch.has-hover ? Theme.button-face-hover
         : Theme.button-face;
@@ -59,7 +59,7 @@ export component ComboBox inherits Rectangle {
             viewbox-width: 7;
             viewbox-height: 4;
             commands: "M 0 0 L 7 0 L 3.5 4 Z";
-            fill: root.enabled ? #000000 : Theme.disabled-text;
+            fill: root.enabled ? Theme.text : Theme.disabled-text;
         }
     }
 
@@ -115,7 +115,7 @@ export component ComboBox inherits Rectangle {
                 padding: 1px;
                 for item[i] in root.model: Rectangle {
                     height: 20px;
-                    background: row-touch.has-hover ? (Theme.hds ? #000000 : #3399ff) : transparent;
+                    background: row-touch.has-hover ? Theme.selection : transparent;
                     HorizontalLayout {
                         padding-left: 5px;
                         padding-right: 5px;

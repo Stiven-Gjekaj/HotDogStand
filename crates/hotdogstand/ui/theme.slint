@@ -1,137 +1,223 @@
 // Every color and size of the application. A control takes its colors from
 // here and holds none of its own, so a theme changes this global and nothing
 // else.
+//
+// There are two themes, Aero and Hot Dog Stand, and each one has a light and
+// a dark form. `pick` and `pick-brush` take the four values in this order:
+// Aero light, Aero dark, Hot Dog Stand light, Hot Dog Stand dark.
 
 export enum ThemeName { aero, hot-dog-stand }
 
 export global Theme {
     in-out property <ThemeName> name: ThemeName.aero;
+    in-out property <bool> dark;
     out property <bool> hds: name == ThemeName.hot-dog-stand;
+
+    pure function pick(al: color, ad: color, hl: color, hd: color) -> color {
+        hds ? (dark ? hd : hl) : (dark ? ad : al)
+    }
+    pure function pick-brush(al: brush, ad: brush, hl: brush, hd: brush) -> brush {
+        hds ? (dark ? hd : hl) : (dark ? ad : al)
+    }
 
     // Type.
     out property <string> font-family: "Segoe UI";
     out property <length> font-size: 12px;
     out property <length> title-font-size: 12px;
-    out property <color> text: #000000;
-    out property <color> muted-text: hds ? #7a0000 : #5d6b7a;
-    out property <color> disabled-text: hds ? #a05050 : #8d8d8d;
-    out property <color> link: hds ? #000000 : #0066cc;
+    out property <color> text: pick(#000000, #e6e9ed, #000000, #ffff00);
+    out property <color> muted-text: pick(#5d6b7a, #9aa8b6, #7a0000, #ff8080);
+    out property <color> disabled-text: pick(#8d8d8d, #6e747a, #a05050, #804040);
+    out property <color> link: pick(#0066cc, #6cb2ff, #000000, #ffff00);
+    out property <color> selection: pick(#3399ff, #2f6fb5, #000000, #ff0000);
 
     // The window frame.
-    out property <brush> frame-glass: hds
-        ? @linear-gradient(180deg, #ff5a4a 0%, #f00000 30%, #c00000 100%)
-        : @linear-gradient(180deg, #e4eefa 0%, #c6dbf1 30%, #b0cbe8 75%, #a5c2e2 100%);
-    out property <brush> frame-glass-inactive: hds
-        ? @linear-gradient(180deg, #ff8a80 0%, #e05050 100%)
-        : @linear-gradient(180deg, #edf2f8 0%, #dbe5f0 40%, #cfdcea 100%);
-    out property <color> frame-border: hds ? #000000 : #49698f;
-    out property <color> frame-highlight: #ffffffaa;
-    out property <color> title-text: hds ? #ffffff : #1b3655;
-    out property <color> client-border: hds ? #000000 : #829bb9;
+    out property <brush> frame-glass: pick-brush(
+        @linear-gradient(180deg, #e4eefa 0%, #c6dbf1 30%, #b0cbe8 75%, #a5c2e2 100%),
+        @linear-gradient(180deg, #4d5d70 0%, #3b4a5c 30%, #2f3c4c 75%, #2a3644 100%),
+        @linear-gradient(180deg, #ff5a4a 0%, #f00000 30%, #c00000 100%),
+        @linear-gradient(180deg, #c03020 0%, #900000 30%, #600000 100%));
+    out property <brush> frame-glass-inactive: pick-brush(
+        @linear-gradient(180deg, #edf2f8 0%, #dbe5f0 40%, #cfdcea 100%),
+        @linear-gradient(180deg, #474d55 0%, #3a4048 100%),
+        @linear-gradient(180deg, #ff8a80 0%, #e05050 100%),
+        @linear-gradient(180deg, #803030 0%, #602020 100%));
+    out property <color> frame-border: pick(#49698f, #141b24, #000000, #000000);
+    out property <color> frame-highlight: pick(#ffffffaa, #ffffff26, #ffffffaa, #ffffff40);
+    out property <color> title-text: pick(#1b3655, #e8eef6, #ffffff, #ffff00);
+    out property <color> client-border: pick(#829bb9, #141b24, #000000, #000000);
     out property <length> frame-radius: 7px;
     out property <length> frame-width: 7px;
     out property <length> title-height: 29px;
 
     // The caption buttons.
-    out property <brush> caption-face: hds
-        ? @linear-gradient(180deg, #ffff80 0%, #ffff00 50%, #e0d000 100%)
-        : @linear-gradient(180deg, #eef4fb 0%, #d4e2f2 45%, #b9cee8 50%, #c9daee 100%);
-    out property <brush> caption-face-hover: hds
-        ? @linear-gradient(180deg, #ffffc0 0%, #ffff40 100%)
-        : @linear-gradient(180deg, #e9f6ff 0%, #b6e0fb 45%, #8cc9f3 50%, #a8dcfa 100%);
+    out property <brush> caption-face: pick-brush(
+        @linear-gradient(180deg, #eef4fb 0%, #d4e2f2 45%, #b9cee8 50%, #c9daee 100%),
+        @linear-gradient(180deg, #6a7889 0%, #556273 45%, #45515f 50%, #4d5a69 100%),
+        @linear-gradient(180deg, #ffff80 0%, #ffff00 50%, #e0d000 100%),
+        @linear-gradient(180deg, #ffff80 0%, #ffff00 50%, #e0d000 100%));
+    out property <brush> caption-face-hover: pick-brush(
+        @linear-gradient(180deg, #e9f6ff 0%, #b6e0fb 45%, #8cc9f3 50%, #a8dcfa 100%),
+        @linear-gradient(180deg, #7ab0de 0%, #4f8cc4 45%, #3a77b0 50%, #4a87c0 100%),
+        @linear-gradient(180deg, #ffffc0 0%, #ffff40 100%),
+        @linear-gradient(180deg, #ffffc0 0%, #ffff40 100%));
     out property <brush> close-face: @linear-gradient(180deg, #e9a99a 0%, #d8705c 45%, #c4402a 50%, #d2654a 100%);
     out property <brush> close-face-hover: @linear-gradient(180deg, #f7b8a6 0%, #ed6c4f 45%, #e0391b 50%, #ef7a55 100%);
-    out property <color> caption-border: hds ? #000000 : #5e7a9c;
+    out property <color> caption-border: pick(#5e7a9c, #1c2530, #000000, #000000);
     out property <color> close-border: #7d2414;
-    out property <color> caption-glyph: hds ? #000000 : #ffffff;
-    out property <color> caption-glyph-shadow: hds ? #ffff00 : #33496a;
+    out property <color> caption-glyph: pick(#ffffff, #ffffff, #000000, #000000);
+    out property <color> caption-glyph-shadow: pick(#33496a, #10161e, #ffff00, #ffff00);
 
     // Surfaces inside a window.
-    out property <color> face: hds ? #ffff00 : #f0f0f0;
-    out property <color> content: hds ? #ffff80 : #ffffff;
-    out property <color> separator: hds ? #000000 : #d5dfe5;
+    out property <color> face: pick(#f0f0f0, #2b2d30, #ffff00, #000000);
+    out property <color> content: pick(#ffffff, #1e1f22, #ffff80, #200000);
+    out property <color> separator: pick(#d5dfe5, #3d4146, #000000, #ff0000);
 
-    // Buttons.
-    out property <brush> button-face: hds
-        ? @linear-gradient(180deg, #ffffff 0%, #e8e8e8 50%, #c0c0c0 100%)
-        : @linear-gradient(180deg, #f2f2f2 0%, #ebebeb 50%, #dddddd 51%, #cfcfcf 100%);
-    out property <brush> button-face-hover: hds
-        ? @linear-gradient(180deg, #ffffff 0%, #ff8080 100%)
-        : @linear-gradient(180deg, #eaf6fd 0%, #d9f0fc 50%, #bee6fd 51%, #a7d9f5 100%);
-    out property <brush> button-face-pressed: hds
-        ? @linear-gradient(180deg, #ff4040 0%, #c00000 100%)
-        : @linear-gradient(180deg, #e5f4fc 0%, #c4e5f6 50%, #98d1ef 51%, #68b3db 100%);
-    out property <color> button-border: hds ? #000000 : #707070;
-    out property <color> button-border-hover: hds ? #000000 : #3c7fb1;
-    out property <color> button-border-pressed: hds ? #000000 : #2c628b;
-    out property <color> focus-ring: hds ? #000000 : #3399ff;
+    // Buttons and other controls with a face.
+    out property <brush> button-face: pick-brush(
+        @linear-gradient(180deg, #f2f2f2 0%, #ebebeb 50%, #dddddd 51%, #cfcfcf 100%),
+        @linear-gradient(180deg, #4e5257 0%, #45494e 50%, #3a3e43 51%, #34383c 100%),
+        @linear-gradient(180deg, #ffffff 0%, #e8e8e8 50%, #c0c0c0 100%),
+        @linear-gradient(180deg, #ff4040 0%, #c00000 100%));
+    out property <brush> button-face-hover: pick-brush(
+        @linear-gradient(180deg, #eaf6fd 0%, #d9f0fc 50%, #bee6fd 51%, #a7d9f5 100%),
+        @linear-gradient(180deg, #4d6a85 0%, #44607a 50%, #3a556e 51%, #355068 100%),
+        @linear-gradient(180deg, #ffffff 0%, #ff8080 100%),
+        @linear-gradient(180deg, #ff8080 0%, #ff2020 100%));
+    out property <brush> button-face-pressed: pick-brush(
+        @linear-gradient(180deg, #e5f4fc 0%, #c4e5f6 50%, #98d1ef 51%, #68b3db 100%),
+        @linear-gradient(180deg, #2f4a63 0%, #2a4359 50%, #243a4e 51%, #213649 100%),
+        @linear-gradient(180deg, #ff4040 0%, #c00000 100%),
+        @linear-gradient(180deg, #800000 0%, #600000 100%));
+    out property <color> button-border: pick(#707070, #1c1e21, #000000, #ffff00);
+    out property <color> button-border-hover: pick(#3c7fb1, #5d9bd0, #000000, #ffff00);
+    out property <color> button-border-pressed: pick(#2c628b, #79b2e2, #000000, #ffff00);
+    out property <color> button-inner-line: pick(#ffffffb0, #ffffff1a, #ffffffb0, #ffffff40);
+    out property <color> disabled-face: pick(#f4f4f4, #2f3236, #e0e0a0, #200000);
+    out property <color> disabled-border: pick(#adb2b5, #43474c, #806000, #600000);
+    out property <color> focus-ring: pick(#3399ff, #6cb2ff, #000000, #ffff00);
     out property <length> control-radius: 3px;
     out property <length> control-height: 23px;
 
+    // The check box.
+    out property <brush> check-face: pick-brush(
+        @linear-gradient(135deg, #dcdcdc 0%, #ffffff 100%),
+        @linear-gradient(135deg, #2a2c2f 0%, #3a3d41 100%),
+        @linear-gradient(135deg, #ffffff 0%, #ffffff 100%),
+        @linear-gradient(135deg, #000000 0%, #000000 100%));
+    out property <brush> check-face-hover: pick-brush(
+        @linear-gradient(135deg, #def9fa 0%, #b1dff8 100%),
+        @linear-gradient(135deg, #2c4458 0%, #3a5a75 100%),
+        @linear-gradient(135deg, #ffffc0 0%, #ffff40 100%),
+        @linear-gradient(135deg, #400000 0%, #800000 100%));
+    out property <color> check-border: pick(#8e8f8f, #6a6e73, #000000, #ffff00);
+    out property <color> check-mark: pick(#4a5f97, #9cc4ff, #000000, #ffff00);
+
     // Text fields and lists.
-    out property <color> field-border: hds ? #000000 : #abadb3;
-    out property <color> field-border-hover: hds ? #000000 : #7eb4ea;
-    out property <color> field-border-focus: hds ? #000000 : #569de5;
-    out property <color> field-background: hds ? #ffffff : #ffffff;
-    out property <color> placeholder: hds ? #a06060 : #8d8d8d;
+    out property <color> field-border: pick(#abadb3, #50545a, #000000, #ffff00);
+    out property <color> field-border-hover: pick(#7eb4ea, #5d9bd0, #000000, #ffff00);
+    out property <color> field-border-focus: pick(#569de5, #6cb2ff, #000000, #ffff00);
+    out property <color> field-background: pick(#ffffff, #1e1f22, #ffffff, #200000);
+    out property <color> placeholder: pick(#8d8d8d, #6e747a, #a06060, #a06060);
+
+    // The scroll bar.
+    out property <brush> scroll-track: pick-brush(
+        @linear-gradient(90deg, #e2e2e2 0%, #ededed 15%, #f6f6f6 100%),
+        @linear-gradient(90deg, #26282b 0%, #2b2d30 100%),
+        @linear-gradient(90deg, #ffff80 0%, #ffff80 100%),
+        @linear-gradient(90deg, #200000 0%, #200000 100%));
+    out property <brush> scroll-thumb: pick-brush(
+        @linear-gradient(90deg, #f3f3f3 0%, #e8e8e8 50%, #d5d5d5 51%, #e1e1e1 100%),
+        @linear-gradient(90deg, #55595e 0%, #4d5156 50%, #44484c 51%, #4a4e53 100%),
+        @linear-gradient(90deg, #ff4040 0%, #c00000 100%),
+        @linear-gradient(90deg, #ff4040 0%, #c00000 100%));
+    out property <brush> scroll-thumb-hover: pick-brush(
+        @linear-gradient(90deg, #e3f4fc 0%, #b8e3fb 50%, #a6d9f4 51%, #b6e2f8 100%),
+        @linear-gradient(90deg, #4d6a85 0%, #44607a 50%, #3a556e 51%, #355068 100%),
+        @linear-gradient(90deg, #ff8080 0%, #ff2020 100%),
+        @linear-gradient(90deg, #ff8080 0%, #ff2020 100%));
+    out property <color> scroll-thumb-border: pick(#959595, #1c1e21, #000000, #ffff00);
+    out property <color> scroll-glyph: pick(#606060, #a8adb3, #000000, #ffff00);
 
     // The list view, like the details view of Explorer.
-    out property <brush> header-face: hds
-        ? @linear-gradient(180deg, #ff2020 0%, #c00000 100%)
-        : @linear-gradient(180deg, #ffffff 0%, #ffffff 40%, #f3f4f6 100%);
-    out property <brush> header-face-hover: hds
-        ? @linear-gradient(180deg, #ff6060 0%, #e00000 100%)
-        : @linear-gradient(180deg, #f3f9fd 0%, #e3f1fb 100%);
-    out property <color> header-text: hds ? #ffffff : #4c607a;
-    out property <color> header-divider: hds ? #000000 : #e2e3e4;
-    out property <color> row-hover: hds ? #ffff00 : #e5f3fb;
-    out property <color> row-hover-border: hds ? #000000 : #70c0e7;
-    out property <brush> row-selected: hds
-        ? @linear-gradient(180deg, #000000 0%, #000000 100%)
-        : @linear-gradient(180deg, #dcebfc 0%, #c1dbfc 100%);
-    out property <color> row-selected-border: hds ? #000000 : #7da2ce;
-    out property <color> row-selected-text: hds ? #ffffff : #000000;
+    out property <brush> header-face: pick-brush(
+        @linear-gradient(180deg, #ffffff 0%, #ffffff 40%, #f3f4f6 100%),
+        @linear-gradient(180deg, #2d3034 0%, #2a2c30 100%),
+        @linear-gradient(180deg, #ff2020 0%, #c00000 100%),
+        @linear-gradient(180deg, #c00000 0%, #800000 100%));
+    out property <brush> header-face-hover: pick-brush(
+        @linear-gradient(180deg, #f3f9fd 0%, #e3f1fb 100%),
+        @linear-gradient(180deg, #33475a 0%, #2c3e50 100%),
+        @linear-gradient(180deg, #ff6060 0%, #e00000 100%),
+        @linear-gradient(180deg, #ff2020 0%, #c00000 100%));
+    out property <color> header-text: pick(#4c607a, #a9bacd, #ffffff, #ffff00);
+    out property <color> header-divider: pick(#e2e3e4, #3a3d42, #000000, #000000);
+    out property <color> sort-arrow: pick(#97a5b6, #7b8a9b, #ffffff, #ffff00);
+    out property <color> row-hover: pick(#e5f3fb, #263646, #ffff00, #400000);
+    out property <color> row-hover-border: pick(#70c0e7, #3f6a8c, #000000, #ff0000);
+    out property <brush> row-selected: pick-brush(
+        @linear-gradient(180deg, #dcebfc 0%, #c1dbfc 100%),
+        @linear-gradient(180deg, #2d4b6d 0%, #26405e 100%),
+        @linear-gradient(180deg, #000000 0%, #000000 100%),
+        @linear-gradient(180deg, #ffff00 0%, #ffff00 100%));
+    out property <color> row-selected-border: pick(#7da2ce, #4b78aa, #000000, #ffff00);
+    out property <color> row-selected-text: pick(#000000, #ffffff, #ffffff, #000000);
     out property <length> row-height: 22px;
 
     // The command bar and the status bar, like Explorer.
-    out property <brush> command-bar: hds
-        ? @linear-gradient(180deg, #ff2a1a 0%, #d00000 100%)
-        : @linear-gradient(180deg, #f6f9fd 0%, #e7eff9 50%, #dce7f5 51%, #e0eaf6 100%);
-    out property <color> command-bar-border: hds ? #000000 : #a0afc3;
-    out property <color> command-text: hds ? #ffffff : #1e395b;
-    out property <brush> command-hover: hds
-        ? @linear-gradient(180deg, #ffff80 0%, #ffff00 100%)
-        : @linear-gradient(180deg, #fcfdfe 0%, #e7f1fa 50%, #d5e6f6 51%, #e2eef9 100%);
-    out property <color> command-hover-border: hds ? #000000 : #8ea9cc;
-    out property <brush> status-bar: hds
-        ? @linear-gradient(180deg, #ffff40 0%, #ffff00 100%)
-        : @linear-gradient(180deg, #f1f5fb 0%, #e3eaf3 100%);
-    out property <color> status-bar-border: hds ? #000000 : #c4d1e1;
+    out property <brush> command-bar: pick-brush(
+        @linear-gradient(180deg, #f6f9fd 0%, #e7eff9 50%, #dce7f5 51%, #e0eaf6 100%),
+        @linear-gradient(180deg, #39424d 0%, #333b45 50%, #2c333c 51%, #2f3640 100%),
+        @linear-gradient(180deg, #ff2a1a 0%, #d00000 100%),
+        @linear-gradient(180deg, #a00000 0%, #700000 100%));
+    out property <color> command-bar-border: pick(#a0afc3, #1b2027, #000000, #000000);
+    out property <color> command-text: pick(#1e395b, #dbe5f0, #ffffff, #ffff00);
+    out property <color> command-hover-text: pick(#1e395b, #ffffff, #000000, #000000);
+    out property <brush> command-hover: pick-brush(
+        @linear-gradient(180deg, #fcfdfe 0%, #e7f1fa 50%, #d5e6f6 51%, #e2eef9 100%),
+        @linear-gradient(180deg, #4d6a85 0%, #44607a 50%, #3a556e 51%, #355068 100%),
+        @linear-gradient(180deg, #ffff80 0%, #ffff00 100%),
+        @linear-gradient(180deg, #ffff80 0%, #ffff00 100%));
+    out property <color> command-hover-border: pick(#8ea9cc, #5d84a8, #000000, #000000);
+    out property <brush> status-bar: pick-brush(
+        @linear-gradient(180deg, #f1f5fb 0%, #e3eaf3 100%),
+        @linear-gradient(180deg, #2f353c 0%, #2a2f35 100%),
+        @linear-gradient(180deg, #ffff40 0%, #ffff00 100%),
+        @linear-gradient(180deg, #300000 0%, #200000 100%));
+    out property <color> status-bar-border: pick(#c4d1e1, #1b2027, #000000, #ff0000);
 
     // Tabs.
-    out property <color> tab-border: hds ? #000000 : #898c95;
-    out property <brush> tab-face: hds
-        ? @linear-gradient(180deg, #ffffff 0%, #ffd0d0 100%)
-        : @linear-gradient(180deg, #f2f2f2 0%, #ebebeb 50%, #dddddd 51%, #cfcfcf 100%);
-    out property <color> tab-selected: hds ? #ffff00 : #ffffff;
+    out property <color> tab-border: pick(#898c95, #4a4e54, #000000, #ffff00);
+    out property <brush> tab-face: pick-brush(
+        @linear-gradient(180deg, #f2f2f2 0%, #ebebeb 50%, #dddddd 51%, #cfcfcf 100%),
+        @linear-gradient(180deg, #3a3d41 0%, #34373b 50%, #2e3135 51%, #2b2e31 100%),
+        @linear-gradient(180deg, #ffffff 0%, #ffd0d0 100%),
+        @linear-gradient(180deg, #600000 0%, #400000 100%));
+    out property <color> tab-selected: pick(#ffffff, #232528, #ffff00, #000000);
 
-    // The menu of a combo box.
-    out property <color> menu-background: hds ? #ffff80 : #f0f0f0;
-    out property <color> menu-border: hds ? #000000 : #979797;
-    out property <brush> menu-hover: hds
-        ? @linear-gradient(180deg, #000000 0%, #000000 100%)
-        : @linear-gradient(180deg, #f2f7fd 0%, #dbeafb 100%);
-    out property <color> menu-hover-border: hds ? #000000 : #a8d8eb;
-    out property <color> menu-hover-text: hds ? #ffffff : #000000;
+    // Menus, and the list of a combo box.
+    out property <color> menu-background: pick(#f0f0f0, #2b2d30, #ffff80, #200000);
+    out property <color> menu-border: pick(#979797, #4a4e54, #000000, #ffff00);
+    out property <color> menu-gutter: pick(#e2e3e3, #3a3d42, #000000, #ffff00);
+    out property <brush> menu-hover: pick-brush(
+        @linear-gradient(180deg, #f2f7fd 0%, #dbeafb 100%),
+        @linear-gradient(180deg, #33506d 0%, #2c4560 100%),
+        @linear-gradient(180deg, #000000 0%, #000000 100%),
+        @linear-gradient(180deg, #ffff00 0%, #ffff00 100%));
+    out property <color> menu-hover-border: pick(#a8d8eb, #4b78aa, #000000, #ffff00);
+    out property <color> menu-hover-text: pick(#000000, #ffffff, #ffffff, #000000);
 
-    // The yellow bar that holds an error, like the information bar of
-    // Internet Explorer.
-    out property <color> info-bar: hds ? #000000 : #ffffe1;
-    out property <color> info-bar-border: hds ? #ff0000 : #e0d080;
-    out property <color> info-bar-text: hds ? #ffff00 : #000000;
+    // The history of a ticket.
+    out property <color> comment-face: pick(#f7fafd, #25282c, #ffffc0, #300000);
+    out property <color> comment-border: pick(#c5d4e6, #3d4a59, #000000, #ff0000);
+
+    // The bar that holds an error, like the information bar of Internet
+    // Explorer.
+    out property <color> info-bar: pick(#ffffe1, #4a4426, #000000, #ffff00);
+    out property <color> info-bar-border: pick(#e0d080, #6a6030, #ff0000, #ff0000);
+    out property <color> info-bar-text: pick(#000000, #f5ecc8, #ffff00, #000000);
 
     // The colors of the priorities, from low to urgent.
     out property <[color]> priority-colors: hds
-        ? [#000000, #000000, #c00000, #ff0000]
-        : [#7f8c99, #1e395b, #c46a00, #c42b1c];
+        ? (dark ? [#ff8080, #ffff00, #ff4040, #ff0000] : [#000000, #000000, #c00000, #ff0000])
+        : (dark ? [#8592a0, #c7d3df, #f0a040, #ff6b5a] : [#7f8c99, #1e395b, #c46a00, #c42b1c]);
 }

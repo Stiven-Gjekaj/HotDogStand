@@ -28,7 +28,7 @@ export component Menu inherits PopupWindow {
         Rectangle {
             x: 28px;
             width: 1px;
-            background: Theme.hds ? #000000 : #e2e3e3;
+            background: Theme.menu-gutter;
         }
 
         VerticalLayout {
@@ -45,7 +45,7 @@ export component Menu inherits PopupWindow {
                     y: 3px;
                     height: 1px;
                     width: parent.width - 32px;
-                    background: Theme.hds ? #000000 : #e0e0e0;
+                    background: Theme.menu-gutter;
                 }
                 if item.checked: Path {
                     x: 9px;

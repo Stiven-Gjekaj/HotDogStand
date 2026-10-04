@@ -21,7 +21,7 @@ export component ScrollBar inherits Rectangle {
     }
 
     width: 17px;
-    background: @linear-gradient(90deg, #e2e2e2 0%, #ededed 15%, #f6f6f6 100%);
+    background: Theme.scroll-track;
 
     // A click on the track moves one page.
     TouchArea {
@@ -40,17 +40,15 @@ export component ScrollBar inherits Rectangle {
         height: root.width;
         border-radius: 2px;
         border-width: arrow-touch.has-hover ? 1px : 0px;
-        border-color: #3c7fb1;
-        background: arrow-touch.has-hover
-            ? @linear-gradient(90deg, #e3f4fc 0%, #b8e3fb 100%)
-            : transparent;
+        border-color: Theme.button-border-hover;
+        background: arrow-touch.has-hover ? Theme.scroll-thumb-hover : transparent;
         Path {
             width: 7px;
             height: 4px;
             viewbox-width: 7;
             viewbox-height: 4;
             commands: i == 0 ? "M 0 4 L 3.5 0 L 7 4 Z" : "M 0 0 L 3.5 4 L 7 0 Z";
-            fill: #606060;
+            fill: Theme.scroll-glyph;
         }
         arrow-touch := TouchArea {
             clicked => {
@@ -66,10 +64,8 @@ export component ScrollBar inherits Rectangle {
         height: root.thumb-size;
         border-radius: 2px;
         border-width: 1px;
-        border-color: thumb-touch.has-hover || thumb-touch.pressed ? #3c7fb1 : #959595;
-        background: thumb-touch.has-hover || thumb-touch.pressed
-            ? @linear-gradient(90deg, #e3f4fc 0%, #b8e3fb 50%, #a6d9f4 51%, #b6e2f8 100%)
-            : @linear-gradient(90deg, #f3f3f3 0%, #e8e8e8 50%, #d5d5d5 51%, #e1e1e1 100%);
+        border-color: thumb-touch.has-hover || thumb-touch.pressed ? Theme.button-border-hover : Theme.scroll-thumb-border;
+        background: thumb-touch.has-hover || thumb-touch.pressed ? Theme.scroll-thumb-hover : Theme.scroll-thumb;
 
         // The grip in the middle of the thumb.
         if self.height > 20px: VerticalLayout {
@@ -79,7 +75,7 @@ export component ScrollBar inherits Rectangle {
                 height: 1px;
                 width: 7px;
                 x: (parent.width - 7px) / 2;
-                background: #9a9a9a;
+                background: Theme.scroll-glyph;
             }
         }
 

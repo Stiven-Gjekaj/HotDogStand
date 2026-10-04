@@ -8,11 +8,11 @@ component FieldFrame inherits Rectangle {
     in property <bool> focused;
     in property <bool> enabled: true;
     border-width: 1px;
-    border-color: !root.enabled ? #adb2b5
+    border-color: !root.enabled ? Theme.disabled-border
         : root.focused ? Theme.field-border-focus
         : root.hover ? Theme.field-border-hover
         : Theme.field-border;
-    background: root.enabled ? Theme.field-background : #f4f4f4;
+    background: root.enabled ? Theme.field-background : Theme.disabled-face;
     border-radius: 2px;
 }
 
@@ -70,7 +70,7 @@ export component TextField inherits Rectangle {
                 font-family: Theme.font-family;
                 font-size: Theme.font-size;
                 vertical-alignment: center;
-                selection-background-color: Theme.hds ? #000000 : #3399ff;
+                selection-background-color: Theme.selection;
                 selection-foreground-color: #ffffff;
                 edited => { root.edited(self.text); }
                 accepted => { root.accepted(self.text); }
@@ -132,7 +132,7 @@ export component TextArea inherits Rectangle {
             color: root.enabled ? Theme.text : Theme.disabled-text;
             font-family: Theme.font-family;
             font-size: Theme.font-size;
-            selection-background-color: Theme.hds ? #000000 : #3399ff;
+            selection-background-color: Theme.selection;
             selection-foreground-color: #ffffff;
             edited => { root.edited(self.text); }
             // Keep the line of the cursor in view.
