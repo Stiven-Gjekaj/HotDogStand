@@ -1,0 +1,122 @@
+// The People window: the names that a ticket can be assigned to.
+
+import { AeroFrame, ResizeEdge, Button, TextField, InfoBar, FieldLabel, ScrollArea } from "aero/index.slint";
+import { Theme } from "theme.slint";
+import { PersonRow } from "types.slint";
+
+export component PeopleWindow inherits Window {
+    in property <bool> system-frame;
+    in property <[PersonRow]> people;
+    in-out property <int> current: -1;
+    in-out property <string> name;
+    in-out property <string> error;
+
+    callback add();
+    callback rename();
+    callback toggle-active();
+    callback picked(int);
+    callback minimize();
+    callback close-window();
+
+    property <bool> has-current: root.current >= 0 && root.current < root.people.length;
+
+    title: "People";
+    icon: @image-url("../../../assets/hotdogstand.svg");
+    no-frame: !root.system-frame;
+    background: root.system-frame ? Theme.face : transparent;
+    default-font-family: Theme.font-family;
+    width: 380px;
+    height: 420px;
+    forward-focus: name-field;
+
+    AeroFrame {
+        title: root.title;
+        icon: root.icon;
+        system-frame: root.system-frame;
+        resizable: false;
+        minimize => { root.minimize(); }
+        close => { root.close-window(); }
+
+        VerticalLayout {
+            padding: 10px;
+            spacing: 8px;
+
+            InfoBar { text <=> root.error; }
+
+            FieldLabel {
+                text: "A ticket can be assigned to each active person. A hidden person keeps their tickets.";
+                wrap: word-wrap;
+            }
+
+            Rectangle {
+                vertical-stretch: 1;
+                border-width: 1px;
+                border-color: Theme.field-border;
+                background: Theme.content;
+                ScrollArea {
+                    x: 1px;
+                    y: 1px;
+                    width: parent.width - 2px;
+                    height: parent.height - 2px;
+                    content-height: root.people.length * Theme.row-height;
+                    for person[i] in root.people: Rectangle {
+                        y: i * Theme.row-height;
+                        height: Theme.row-height;
+                        border-radius: 3px;
+                        border-width: i == root.current || touch.has-hover ? 1px : 0px;
+                        border-color: i == root.current ? Theme.row-selected-border : Theme.row-hover-border;
+                        background: i == root.current ? Theme.row-selected
+                            : touch.has-hover ? Theme.row-hover : transparent;
+                        HorizontalLayout {
+                            padding-left: 8px;
+                            Text {
+                                text: person.active ? person.name : "\{person.name} (hidden)";
+                                color: i == root.current && Theme.hds ? Theme.row-selected-text
+                                    : person.active ? Theme.text : Theme.muted-text;
+                                font-family: Theme.font-family;
+                                font-size: Theme.font-size;
+                                vertical-alignment: center;
+                            }
+                        }
+                        touch := TouchArea {
+                            clicked => {
+                                root.current = i;
+                                root.picked(i);
+                            }
+                        }
+                    }
+                }
+            }
+
+            HorizontalLayout {
+                spacing: 6px;
+                FieldLabel { text: "Name:"; }
+                name-field := TextField {
+                    text <=> root.name;
+                    accepted => { root.add(); }
+                }
+            }
+
+            HorizontalLayout {
+                spacing: 7px;
+                alignment: end;
+                Button {
+                    text: "Add";
+                    primary: true;
+                    enabled: root.name != "";
+                    clicked => { root.add(); }
+                }
+                Button {
+                    text: "Rename";
+                    enabled: root.has-current && root.name != "";
+                    clicked => { root.rename(); }
+                }
+                Button {
+                    text: root.has-current && !root.people[root.current].active ? "Show" : "Hide";
+                    enabled: root.has-current;
+                    clicked => { root.toggle-active(); }
+                }
+            }
+        }
+    }
+}

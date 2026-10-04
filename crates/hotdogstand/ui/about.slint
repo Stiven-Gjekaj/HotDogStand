@@ -1,0 +1,78 @@
+// The About window. It names the version and the licence, and gives the
+// credit to Slint that the Slint Royalty-free Licence asks for.
+
+import { AboutSlint } from "std-widgets.slint";
+import { AeroFrame, Button, FieldLabel, Heading } from "aero/index.slint";
+import { Theme } from "theme.slint";
+
+export component AboutWindow inherits Window {
+    in property <bool> system-frame;
+    in property <string> version;
+    in property <string> workspace-path;
+    callback close-window();
+
+    title: "About HotDogStand";
+    icon: @image-url("../../../assets/hotdogstand.svg");
+    no-frame: !root.system-frame;
+    background: root.system-frame ? Theme.face : transparent;
+    default-font-family: Theme.font-family;
+    width: 420px;
+    height: 400px;
+
+    AeroFrame {
+        title: root.title;
+        icon: root.icon;
+        system-frame: root.system-frame;
+        resizable: false;
+        can-minimize: false;
+        close => { root.close-window(); }
+
+        VerticalLayout {
+            padding: 14px;
+            spacing: 8px;
+            HorizontalLayout {
+                spacing: 12px;
+                Image {
+                    source: @image-url("../../../assets/hotdogstand.svg");
+                    width: 64px;
+                    height: 64px;
+                }
+                VerticalLayout {
+                    alignment: center;
+                    spacing: 2px;
+                    Heading { text: "HotDogStand"; }
+                    FieldLabel { text: "Version \{root.version}"; }
+                    FieldLabel {
+                        text: "A ticket manager on your own computer.";
+                        color: Theme.muted-text;
+                    }
+                }
+            }
+            FieldLabel {
+                text: "The code is under the MIT Licence. The look copies Windows 7. HotDogStand is not a product of Microsoft.";
+                wrap: word-wrap;
+            }
+            FieldLabel {
+                text: "Your workspace file:\n\{root.workspace-path}";
+                wrap: word-wrap;
+                color: Theme.muted-text;
+            }
+            Rectangle { vertical-stretch: 1; }
+            HorizontalLayout {
+                alignment: center;
+                AboutSlint {
+                    width: 220px;
+                    height: 120px;
+                }
+            }
+            HorizontalLayout {
+                alignment: end;
+                Button {
+                    text: "OK";
+                    primary: true;
+                    clicked => { root.close-window(); }
+                }
+            }
+        }
+    }
+}

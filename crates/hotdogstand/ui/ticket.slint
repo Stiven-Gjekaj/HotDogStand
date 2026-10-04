@@ -1,0 +1,293 @@
+// The window of one ticket. It has two tabs: "General" for the fields, and
+// "History" for the comments and the events.
+
+import { AeroFrame, ResizeEdge, Button, CheckBox, TextField, TextArea, ComboBox, InfoBar, TabBar, TabPanel, FieldLabel, ScrollArea } from "aero/index.slint";
+import { Theme } from "theme.slint";
+import { LabelChip, HistoryEntry } from "types.slint";
+
+component HistoryItem inherits Rectangle {
+    in property <HistoryEntry> entry;
+
+    height: layout.preferred-height;
+
+    layout := VerticalLayout {
+        padding-top: 3px;
+        padding-bottom: 3px;
+        if root.entry.is-comment: Rectangle {
+            height: comment-layout.preferred-height;
+            border-radius: 3px;
+            border-width: 1px;
+            border-color: Theme.hds ? #000000 : #c5d4e6;
+            background: Theme.hds ? #ffffc0 : #f7fafd;
+            comment-layout := VerticalLayout {
+                padding: 7px;
+                spacing: 4px;
+                Text {
+                    text: root.entry.edited ? "Comment, \{root.entry.when} (edited)" : "Comment, \{root.entry.when}";
+                    color: Theme.muted-text;
+                    font-family: Theme.font-family;
+                    font-size: 11px;
+                }
+                Text {
+                    text: root.entry.text;
+                    color: Theme.text;
+                    font-family: Theme.font-family;
+                    font-size: Theme.font-size;
+                    wrap: word-wrap;
+                }
+            }
+        }
+        if !root.entry.is-comment: HorizontalLayout {
+            spacing: 8px;
+            padding-left: 8px;
+            Text {
+                text: root.entry.when;
+                color: Theme.muted-text;
+                font-family: Theme.font-family;
+                font-size: 11px;
+                vertical-alignment: center;
+                width: 110px;
+            }
+            Text {
+                text: root.entry.text;
+                color: Theme.muted-text;
+                font-family: Theme.font-family;
+                font-size: Theme.font-size;
+                vertical-alignment: center;
+                wrap: word-wrap;
+                horizontal-stretch: 1;
+            }
+        }
+    }
+}
+
+export component TicketWindow inherits Window {
+    in property <bool> system-frame;
+    in property <bool> is-maximized;
+
+    // The number of the ticket, or 0 for a ticket that does not exist yet.
+    in property <int> ticket-id;
+    in-out property <string> title-text;
+    in-out property <string> description;
+    in property <[string]> status-choices: ["Open", "In progress", "Closed"];
+    in-out property <int> status-index;
+    in property <[string]> priority-choices: ["Low", "Normal", "High", "Urgent"];
+    in-out property <int> priority-index: 1;
+    in property <[string]> assignee-choices: ["Nobody"];
+    in-out property <int> assignee-index;
+    in property <[LabelChip]> all-labels;
+    in-out property <[bool]> label-checked;
+    in property <[HistoryEntry]> history;
+    in property <string> dates-text;
+    in-out property <string> comment-draft;
+    in-out property <string> error;
+    in-out property <int> tab;
+
+    // Saves the fields. `then-close` closes the window after a save that
+    // works.
+    callback save(bool);
+    callback cancel();
+    callback add-comment();
+    // Sets the status to closed, or to open when it is closed, and saves.
+    callback close-or-reopen();
+
+    callback minimize();
+    callback toggle-maximize();
+    callback start-resize(ResizeEdge);
+
+    property <bool> is-new: root.ticket-id == 0;
+    property <bool> is-closed: root.status-index == 2;
+
+    title: root.is-new ? "New ticket"
+        : root.title-text == "" ? "Ticket \{root.ticket-id}"
+        : "Ticket \{root.ticket-id}: \{root.title-text}";
+    icon: @image-url("../../../assets/hotdogstand.svg");
+    no-frame: !root.system-frame;
+    background: root.system-frame ? Theme.face : transparent;
+    default-font-family: Theme.font-family;
+    preferred-width: 620px;
+    preferred-height: 560px;
+    min-width: 460px;
+    min-height: 420px;
+
+    AeroFrame {
+        title: root.title;
+        icon: root.icon;
+        system-frame: root.system-frame;
+        maximized: root.is-maximized;
+        minimize => { root.minimize(); }
+        toggle-maximize => { root.toggle-maximize(); }
+        close => { root.cancel(); }
+        start-resize(edge) => { root.start-resize(edge); }
+
+        FocusScope {
+            key-pressed(event) => {
+                if event.text == Key.Escape {
+                    root.cancel();
+                    return accept;
+                }
+                reject
+            }
+
+            VerticalLayout {
+                padding: 10px;
+                spacing: 0px;
+
+                InfoBar {
+                    text <=> root.error;
+                }
+                if root.error != "": Rectangle { height: 8px; }
+
+                TabBar {
+                    tabs: root.is-new ? ["General"] : ["General", "History"];
+                    current-index <=> root.tab;
+                }
+
+                TabPanel {
+                    vertical-stretch: 1;
+
+                    if root.tab == 0: GridLayout {
+                        spacing: 8px;
+                        Row {
+                            FieldLabel { text: "Title:"; }
+                            TextField {
+                                colspan: 3;
+                                text <=> root.title-text;
+                                placeholder: "What is the problem?";
+                            }
+                        }
+                        Row {
+                            FieldLabel { text: "Status:"; }
+                            ComboBox {
+                                model: root.status-choices;
+                                current-index <=> root.status-index;
+                                enabled: !root.is-new;
+                            }
+                            FieldLabel { text: "Priority:"; }
+                            ComboBox {
+                                model: root.priority-choices;
+                                current-index <=> root.priority-index;
+                            }
+                        }
+                        Row {
+                            FieldLabel { text: "Assigned to:"; }
+                            ComboBox {
+                                model: root.assignee-choices;
+                                current-index <=> root.assignee-index;
+                            }
+                        }
+                        Row {
+                            FieldLabel {
+                                text: "Labels:";
+                                vertical-alignment: center;
+                                height: 18px;
+                            }
+                            FlexboxLayout {
+                                colspan: 3;
+                                vertical-stretch: 0;
+                                spacing: 12px;
+                                if root.all-labels.length == 0: FieldLabel {
+                                    text: "There are no labels. Make them in the Labels window.";
+                                    color: Theme.muted-text;
+                                }
+                                for chip[i] in root.all-labels: CheckBox {
+                                    text: chip.name;
+                                    swatch: chip.color;
+                                    checked: root.label-checked[i];
+                                    toggled(on) => { root.label-checked[i] = on; }
+                                }
+                            }
+                        }
+                        Row {
+                            // The label stays at the top while the field grows.
+                            VerticalLayout {
+                                FieldLabel {
+                                    text: "Description:";
+                                    height: Theme.control-height;
+                                }
+                                Rectangle { }
+                            }
+                            TextArea {
+                                colspan: 3;
+                                vertical-stretch: 1;
+                                text <=> root.description;
+                                placeholder: "Markdown is fine.";
+                            }
+                        }
+                        Row {
+                            Rectangle { vertical-stretch: 0; }
+                            FieldLabel {
+                                colspan: 3;
+                                text: root.dates-text;
+                                color: Theme.muted-text;
+                                font-size: 11px;
+                            }
+                        }
+                    }
+
+                    if root.tab == 1: VerticalLayout {
+                        spacing: 8px;
+                        Rectangle {
+                            vertical-stretch: 1;
+                            border-width: 1px;
+                            border-color: Theme.field-border;
+                            background: Theme.content;
+                            area := ScrollArea {
+                                x: 1px;
+                                y: 1px;
+                                width: parent.width - 2px;
+                                height: parent.height - 2px;
+                                content-height: entries.preferred-height;
+                                entries := VerticalLayout {
+                                    width: parent.width;
+                                    padding: 6px;
+                                    spacing: 2px;
+                                    for entry in root.history: HistoryItem {
+                                        entry: entry;
+                                    }
+                                }
+                            }
+                        }
+                        TextArea {
+                            height: 70px;
+                            text <=> root.comment-draft;
+                            placeholder: "Write a comment";
+                        }
+                        HorizontalLayout {
+                            alignment: end;
+                            Button {
+                                text: "Add comment";
+                                enabled: root.comment-draft != "";
+                                clicked => { root.add-comment(); }
+                            }
+                        }
+                    }
+                }
+
+                Rectangle { height: 10px; }
+
+                HorizontalLayout {
+                    spacing: 7px;
+                    if !root.is-new: Button {
+                        text: root.is-closed ? "Reopen ticket" : "Close ticket";
+                        clicked => { root.close-or-reopen(); }
+                    }
+                    Rectangle { horizontal-stretch: 1; }
+                    Button {
+                        text: root.is-new ? "Create" : "OK";
+                        primary: true;
+                        clicked => { root.save(true); }
+                    }
+                    Button {
+                        text: "Cancel";
+                        clicked => { root.cancel(); }
+                    }
+                    if !root.is-new: Button {
+                        text: "Apply";
+                        clicked => { root.save(false); }
+                    }
+                }
+            }
+        }
+    }
+}
