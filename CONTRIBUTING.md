@@ -124,6 +124,17 @@ theme and in the Hot Dog Stand theme.
 
 An agent that works in this repository follows [AGENTS.md](AGENTS.md).
 
+## Making a release
+
+1. Move the notes under "Unreleased" in CHANGELOG.md to a new section with
+   the version and the date, such as `## 0.2.0 (2026-11-01)`.
+2. Set the version in the `[workspace.package]` table of `Cargo.toml`, and
+   run `cargo build` so that `Cargo.lock` follows.
+3. Commit the two changes, one commit each, and push them.
+4. Tag the commit with `v` and the version, such as `v0.2.0`, and push the
+   tag. The release workflow builds the packages and makes the release, with
+   the section of CHANGELOG.md as its notes.
+
 ## Reporting a security problem
 
 Do not open a public issue. See [SECURITY.md](SECURITY.md).
