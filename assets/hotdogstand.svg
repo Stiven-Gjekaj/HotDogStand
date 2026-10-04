@@ -70,12 +70,14 @@
     <path d="M31 42 h46 M31 51 h32 M31 60 h40" stroke="#c48e1a" stroke-width="3" opacity="0.75"/>
   </g>
 
-  <!-- hot dog -->
-  <ellipse cx="64" cy="105" rx="44" ry="4" fill="#8a5a10" opacity="0.45" filter="url(#soft)"/>
-  <rect x="20" y="68" width="88" height="37" rx="16" fill="url(#bun)" stroke="#7d4b12" stroke-width="1.6"/>
-  <path d="M25 72 a9 9 0 0 1 9 -3 h60 a9 9 0 0 1 9 3" fill="none" stroke="#fff" stroke-opacity="0.55" stroke-width="2" stroke-linecap="round"/>
-  <rect x="15" y="68" width="98" height="20" rx="10" fill="url(#sausage)" stroke="#5f130a" stroke-width="1.6"/>
-  <rect x="21" y="70.5" width="86" height="4.5" rx="2.25" fill="#fff" opacity="0.4"/>
-  <path d="M24 78 q6.5 -6.5 13 0 t13 0 t13 0 t13 0 t13 0 t13 0" fill="none" stroke="#9c6b00" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M24 78 q6.5 -6.5 13 0 t13 0 t13 0 t13 0 t13 0 t13 0" fill="none" stroke="#ffd21a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- hot dog, scaled about its center to leave space at the window edges -->
+  <g transform="translate(64 85) scale(0.82) translate(-64 -86.5)">
+    <ellipse cx="64" cy="105" rx="44" ry="4" fill="#8a5a10" opacity="0.45" filter="url(#soft)"/>
+    <rect x="20" y="68" width="88" height="37" rx="16" fill="url(#bun)" stroke="#7d4b12" stroke-width="1.6"/>
+    <path d="M25 72 a9 9 0 0 1 9 -3 h60 a9 9 0 0 1 9 3" fill="none" stroke="#fff" stroke-opacity="0.55" stroke-width="2" stroke-linecap="round"/>
+    <rect x="15" y="68" width="98" height="20" rx="10" fill="url(#sausage)" stroke="#5f130a" stroke-width="1.6"/>
+    <rect x="21" y="70.5" width="86" height="4.5" rx="2.25" fill="#fff" opacity="0.4"/>
+    <path d="M24 78 q6.5 -6.5 13 0 t13 0 t13 0 t13 0 t13 0 t13 0" fill="none" stroke="#9c6b00" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M24 78 q6.5 -6.5 13 0 t13 0 t13 0 t13 0 t13 0 t13 0" fill="none" stroke="#ffd21a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
 </svg>
