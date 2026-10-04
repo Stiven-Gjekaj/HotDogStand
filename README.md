@@ -95,6 +95,17 @@ cargo run --release
 The first start makes the workspace file in the data directory of your
 system. [docs/architecture.md](docs/architecture.md#data-model) says where.
 
+## Install
+
+There are no release builds yet. Build the application, then install it in
+the way of your system, so that it has its icon and its name.
+
+| System | Command | Result |
+| ------ | ------- | ------ |
+| macOS | `./scripts/bundle-macos.sh` | `target/release/HotDogStand.app`. Copy it to `/Applications`. |
+| Linux | `cargo build --release && ./scripts/install-linux.sh` | The program in `~/.local/bin`, and an entry with the icon in the menu of applications. |
+| Windows | `cargo build --release` | `target\release\hotdogstand.exe`, with the icon in it. |
+
 ## Your data
 
 The workspace is one file on your computer. Nothing reads it except
