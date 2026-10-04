@@ -1,6 +1,10 @@
 //! HotDogStand: a ticket manager on your own computer, with the look of
 //! Windows 7.
 
+// A release build on Windows opens no console window next to the
+// application.
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 mod app;
 mod format;
 mod frame;

@@ -23,5 +23,9 @@ slint = { workspace = true, features = ["unstable-winit-030"] }
 [build-dependencies]
 slint-build.workspace = true
 
+# Puts the icon and the name of the application into the .exe file.
+[target.'cfg(windows)'.build-dependencies]
+winresource.workspace = true
+
 [lints]
 workspace = true

@@ -24,6 +24,7 @@ jiff = "=0.2.37"
 thiserror = "=2.0.21"
 anyhow = "=1.0.104"
 rfd = "=0.17.2"
+winresource = "=0.1.31"
 
 [workspace.lints.rust]
 rust_2018_idioms = { level = "warn", priority = -1 }
