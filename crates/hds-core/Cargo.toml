@@ -9,6 +9,9 @@ repository.workspace = true
 publish = false
 
 [dependencies]
+jiff = { workspace = true, features = ["serde"] }
+serde.workspace = true
+thiserror.workspace = true
 
 [lints]
 workspace = true
