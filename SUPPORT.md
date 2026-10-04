@@ -8,26 +8,33 @@
 
 - [README.md](README.md) says what HotDogStand is and how to start it.
 - [docs/architecture.md](docs/architecture.md) explains the parts, the data
-  model, and the settings.
+  model, where the workspace file is, and the export formats.
 - [TODO.md](TODO.md) says what is not built yet. Look here before you report
   that something is missing.
 
-## When the server refuses to start
+## Where your data is
 
-HotDogStand writes one line for a problem that you can correct, and it says
-what to change. Two of these are common:
+The workspace is one file. The path is different on each system:
 
-- **A setting that nothing reads.** A variable that starts with
-  `HOTDOGSTAND_` is spelled wrong. The message names the variable that you
-  probably meant.
-- **A database that is older than the code.** Run `hotdogstand migrate`.
+| System | Path |
+| ------ | ---- |
+| Windows | `%APPDATA%\HotDogStand\workspace.db` |
+| macOS | `~/Library/Application Support/HotDogStand/workspace.db` |
+| Linux | `~/.local/share/hotdogstand/workspace.db` |
 
-## When you cannot log in
+Copy this file to make a backup. Close the application before you copy it.
 
-The page gives one message for a wrong name and for a wrong password. This is
-on purpose. Ask an admin to check that your account is active. An admin who
-lost their password runs `hotdogstand create-user --admin` on the server to
-make a new admin account.
+## When the application does not open
+
+- **A workspace file from a newer version.** An old version cannot open a
+  file that a newer version changed. Install the newer version.
+- **A damaged workspace file.** The message names the file. Put a backup in
+  its place, or move the file away to start with an empty workspace.
+
+## When the window frame behaves badly
+
+Some Linux desktops do not move or resize a window with no frame from the
+system. Turn on "Use the system frame" in "View > Options".
 
 ## Ask a question or report a fault
 
@@ -35,8 +42,10 @@ make a new admin account.
   [issues](https://github.com/Stiven-Gjekaj/HotDogStand/issues) first.
 - Open a bug report for a fault, or a feature request for something new.
 
-Say which commit you used, which browser you used, what you did, and what
-happened. A screenshot helps for a fault in the look.
+Say which version or commit you used, which system you used, what you did, and
+what happened. A screenshot helps for a fault in the look. Do not attach your
+workspace file. It holds your tickets. Make a small workspace that shows the
+fault, and attach its export.
 
 Do not use the issue tracker for a security problem. See
 [SECURITY.md](SECURITY.md).
