@@ -92,6 +92,9 @@ export component DetailsList inherits Rectangle {
                     horizontal-stretch: c == root.titles.length - 1 ? 1 : 0;
                     background: header-touch.has-hover ? Theme.header-face-hover : transparent;
                     clip: true;
+                    accessible-role: button;
+                    accessible-label: "Sort by " + title;
+                    accessible-action-default => { root.sort(c); }
 
                     // The arrow of the sort, at the top of the header, as in
                     // Explorer.
