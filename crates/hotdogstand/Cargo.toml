@@ -1,0 +1,18 @@
+[package]
+name = "hotdogstand"
+description = "A ticket manager on your own computer, with the look of Windows 7"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+keywords = ["ticket", "issue-tracker", "slint", "windows-7", "desktop"]
+categories = ["gui"]
+publish = false
+
+[dependencies]
+hds-core.workspace = true
+hds-store.workspace = true
+
+[lints]
+workspace = true

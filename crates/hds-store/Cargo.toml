@@ -1,0 +1,15 @@
+[package]
+name = "hds-store"
+description = "The SQLite workspace file of HotDogStand"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+hds-core.workspace = true
+
+[lints]
+workspace = true
