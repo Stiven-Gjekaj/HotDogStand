@@ -5,6 +5,7 @@
 
 mod error;
 pub mod event;
+pub mod export;
 pub mod people;
 pub mod query;
 pub mod ticket;

@@ -9,8 +9,10 @@ repository.workspace = true
 publish = false
 
 [dependencies]
+csv.workspace = true
 jiff = { workspace = true, features = ["serde"] }
 serde.workspace = true
+serde_json.workspace = true
 thiserror.workspace = true
 
 [lints]
