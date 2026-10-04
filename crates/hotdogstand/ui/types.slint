@@ -1,0 +1,33 @@
+// The data that the Rust code gives to the windows.
+
+export struct LabelChip {
+    id: int,
+    name: string,
+    color: color,
+}
+
+// One row of the ticket list. `cells` holds the text of each column, in the
+// order of the columns. The list draws the labels from `labels`, and the color
+// of the priority from `priority-level`.
+export struct TicketRow {
+    id: int,
+    cells: [string],
+    priority-level: int,
+    labels: [LabelChip],
+    closed: bool,
+}
+
+// One entry of the history of a ticket: a comment or an event.
+export struct HistoryEntry {
+    is-comment: bool,
+    comment-id: int,
+    when: string,
+    text: string,
+    edited: bool,
+}
+
+export struct PersonRow {
+    id: int,
+    name: string,
+    active: bool,
+}

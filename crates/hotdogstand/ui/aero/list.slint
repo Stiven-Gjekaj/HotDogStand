@@ -1,0 +1,251 @@
+// A list with column headers, like the details view of Explorer in
+// Windows 7. It makes only the rows that are in view, so a list of ten
+// thousand tickets stays fast.
+
+import { Theme } from "../theme.slint";
+import { TicketRow } from "../types.slint";
+import { ScrollArea } from "scroll.slint";
+
+component Chip inherits Rectangle {
+    in property <string> text;
+    in property <color> tint;
+    height: 16px;
+    width: chip-text.preferred-width + 12px;
+    border-radius: 3px;
+    background: root.tint.with-alpha(0.18);
+    border-width: 1px;
+    border-color: root.tint.with-alpha(0.7);
+    chip-text := Text {
+        text: root.text;
+        color: root.tint.darker(0.5);
+        font-family: Theme.font-family;
+        font-size: 11px;
+    }
+}
+
+export component DetailsList inherits Rectangle {
+    in property <[TicketRow]> rows;
+    in property <[string]> titles;
+    in-out property <[length]> widths;
+    // The column of the sort, and its order.
+    in property <int> sort-column;
+    in property <bool> sort-descending;
+    // The position in `rows` of the selected row, or -1.
+    in-out property <int> current: -1;
+    in property <string> empty-text;
+    // The column that holds the labels, and the one that holds the
+    // priority.
+    in property <int> labels-column: -1;
+    in property <int> priority-column: -1;
+    callback sort(int);
+    callback activate(int);
+
+    property <length> rh: Theme.row-height;
+    property <int> first: max(0, floor(area.offset / root.rh));
+    property <int> visible-count: ceil(area.height / root.rh) + 1;
+
+    public function show-current() {
+        if root.current * root.rh < area.offset {
+            area.scroll-to(root.current * root.rh);
+        } else if (root.current + 1) * root.rh > area.offset + area.height {
+            area.scroll-to((root.current + 1) * root.rh - area.height);
+        }
+    }
+
+    function move-to(index: int) {
+        if root.rows.length > 0 {
+            root.current = clamp(index, 0, root.rows.length - 1);
+            root.show-current();
+        }
+    }
+
+    accessible-role: list;
+    forward-focus: focus;
+    background: Theme.content;
+    clip: true;
+
+    focus := FocusScope {
+        key-pressed(event) => {
+            if event.text == Key.UpArrow { root.move-to(root.current - 1); return accept; }
+            if event.text == Key.DownArrow { root.move-to(root.current + 1); return accept; }
+            if event.text == Key.Home { root.move-to(0); return accept; }
+            if event.text == Key.End { root.move-to(root.rows.length - 1); return accept; }
+            if event.text == Key.PageUp { root.move-to(root.current - root.visible-count + 2); return accept; }
+            if event.text == Key.PageDown { root.move-to(root.current + root.visible-count - 2); return accept; }
+            if event.text == "\n" && root.current >= 0 {
+                root.activate(root.current);
+                return accept;
+            }
+            reject
+        }
+    }
+
+    VerticalLayout {
+        // The headers.
+        Rectangle {
+            height: 25px;
+            background: Theme.header-face;
+            HorizontalLayout {
+                for title[c] in root.titles: Rectangle {
+                    min-width: root.widths[c];
+                    max-width: c == root.titles.length - 1 ? 100000px : root.widths[c];
+                    horizontal-stretch: c == root.titles.length - 1 ? 1 : 0;
+                    background: header-touch.has-hover ? Theme.header-face-hover : transparent;
+                    clip: true;
+
+                    // The arrow of the sort, at the top of the header, as in
+                    // Explorer.
+                    if c == root.sort-column: Path {
+                        x: (parent.width - 8px) / 2;
+                        y: 1px;
+                        width: 8px;
+                        height: 4px;
+                        viewbox-width: 8;
+                        viewbox-height: 4;
+                        commands: root.sort-descending ? "M 0 0 L 4 4 L 8 0" : "M 0 4 L 4 0 L 8 4";
+                        stroke: Theme.hds ? #ffffff : #97a5b6;
+                        stroke-width: 1px;
+                        fill: transparent;
+                    }
+
+                    HorizontalLayout {
+                        padding-left: 6px;
+                        padding-right: 6px;
+                        Text {
+                            text: title;
+                            color: Theme.header-text;
+                            font-family: Theme.font-family;
+                            font-size: Theme.font-size;
+                            vertical-alignment: center;
+                            overflow: elide;
+                        }
+                    }
+
+                    header-touch := TouchArea {
+                        clicked => { root.sort(c); }
+                    }
+
+                    // The line between two headers. A drag on it changes the
+                    // width of the column.
+                    Rectangle {
+                        x: parent.width - 1px;
+                        width: 1px;
+                        background: Theme.header-divider;
+                    }
+                    if c < root.titles.length - 1: TouchArea {
+                        x: parent.width - 5px;
+                        width: 5px;
+                        mouse-cursor: col-resize;
+                        property <length> start-width;
+                        pointer-event(event) => {
+                            if event.kind == PointerEventKind.down {
+                                self.start-width = root.widths[c];
+                            }
+                        }
+                        moved => {
+                            if self.pressed {
+                                root.widths[c] = max(30px, self.start-width + self.mouse-x - self.pressed-x);
+                            }
+                        }
+                    }
+                }
+            }
+            Rectangle {
+                y: parent.height - 1px;
+                height: 1px;
+                background: Theme.header-divider;
+            }
+        }
+
+        area := ScrollArea {
+            content-height: root.rows.length * root.rh;
+
+            for i in root.visible-count: Rectangle {
+                property <int> index: root.first + i;
+                property <TicketRow> data: root.rows[self.index];
+                property <bool> selected: self.index == root.current;
+                visible: self.index < root.rows.length;
+                accessible-role: list-item;
+                accessible-label: self.data.cells[0] + " " + self.data.cells[1];
+                accessible-item-selectable: true;
+                accessible-item-selected: self.selected;
+                accessible-action-default => {
+                    root.current = self.index;
+                    root.activate(self.index);
+                }
+                x: 0;
+                y: self.index * root.rh;
+                width: parent.width;
+                height: root.rh;
+
+                Rectangle {
+                    x: 2px;
+                    width: parent.width - 4px;
+                    y: 1px;
+                    height: parent.height - 1px;
+                    border-radius: 3px;
+                    border-width: parent.selected || row-touch.has-hover ? 1px : 0px;
+                    border-color: parent.selected ? Theme.row-selected-border : Theme.row-hover-border;
+                    background: parent.selected ? Theme.row-selected
+                        : row-touch.has-hover ? Theme.row-hover : transparent;
+                }
+
+                HorizontalLayout {
+                    padding-left: 2px;
+                    for cell[c] in root.titles: Rectangle {
+                        min-width: root.widths[c];
+                        max-width: c == root.titles.length - 1 ? 100000px : root.widths[c];
+                        horizontal-stretch: c == root.titles.length - 1 ? 1 : 0;
+                        clip: true;
+                        HorizontalLayout {
+                            padding-left: 6px;
+                            padding-right: 6px;
+                            spacing: 3px;
+                            if c == root.labels-column: HorizontalLayout {
+                                spacing: 3px;
+                                alignment: start;
+                                for chip in data.labels: Chip {
+                                    y: (parent.height - self.height) / 2;
+                                    text: chip.name;
+                                    tint: chip.color;
+                                }
+                            }
+                            if c != root.labels-column: Text {
+                                text: data.cells[c];
+                                color: selected && Theme.hds ? Theme.row-selected-text
+                                    : c == root.priority-column ? Theme.priority-colors[data.priority-level]
+                                    : data.closed ? Theme.muted-text
+                                    : Theme.text;
+                                font-family: Theme.font-family;
+                                font-size: Theme.font-size;
+                                font-weight: c == root.priority-column && data.priority-level == 3 ? 600 : 400;
+                                vertical-alignment: center;
+                                overflow: elide;
+                            }
+                        }
+                    }
+                }
+
+                row-touch := TouchArea {
+                    clicked => {
+                        focus.focus();
+                        root.current = parent.index;
+                    }
+                    double-clicked => {
+                        root.current = parent.index;
+                        root.activate(parent.index);
+                    }
+                }
+            }
+        }
+    }
+
+    if root.rows.length == 0: Text {
+        y: 40px;
+        text: root.empty-text;
+        color: Theme.muted-text;
+        font-family: Theme.font-family;
+        font-size: Theme.font-size;
+        horizontal-alignment: center;
+    }
+}

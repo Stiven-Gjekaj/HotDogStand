@@ -1,0 +1,148 @@
+// Text fields with one line and with many lines.
+
+import { Theme } from "../theme.slint";
+import { ScrollArea } from "scroll.slint";
+
+component FieldFrame inherits Rectangle {
+    in property <bool> hover;
+    in property <bool> focused;
+    in property <bool> enabled: true;
+    border-width: 1px;
+    border-color: !root.enabled ? #adb2b5
+        : root.focused ? Theme.field-border-focus
+        : root.hover ? Theme.field-border-hover
+        : Theme.field-border;
+    background: root.enabled ? Theme.field-background : #f4f4f4;
+    border-radius: 2px;
+}
+
+export component TextField inherits Rectangle {
+    in-out property <string> text;
+    in property <string> placeholder;
+    in property <bool> enabled: true;
+    in property <bool> read-only;
+    callback edited(string);
+    callback accepted(string);
+
+    accessible-role: text-input;
+    accessible-value: root.text;
+    accessible-placeholder-text: root.placeholder;
+    forward-focus: input;
+
+    public function select-all() {
+        input.select-all();
+    }
+
+    height: Theme.control-height;
+    min-width: 60px;
+
+    FieldFrame {
+        hover: touch.has-hover;
+        focused: input.has-focus;
+        enabled: root.enabled;
+    }
+
+    touch := TouchArea {
+        mouse-cursor: MouseCursor.text;
+    }
+
+    HorizontalLayout {
+        padding-left: 4px;
+        padding-right: 4px;
+        Rectangle {
+            clip: true;
+            if root.text == "" && !input.has-focus: Text {
+                x: 0;
+                text: root.placeholder;
+                color: Theme.placeholder;
+                font-family: Theme.font-family;
+                font-size: Theme.font-size;
+                font-italic: true;
+                vertical-alignment: center;
+                height: parent.height;
+            }
+            input := TextInput {
+                text <=> root.text;
+                enabled: root.enabled;
+                read-only: root.read-only;
+                single-line: true;
+                color: root.enabled ? Theme.text : Theme.disabled-text;
+                font-family: Theme.font-family;
+                font-size: Theme.font-size;
+                vertical-alignment: center;
+                selection-background-color: Theme.hds ? #000000 : #3399ff;
+                selection-foreground-color: #ffffff;
+                edited => { root.edited(self.text); }
+                accepted => { root.accepted(self.text); }
+            }
+        }
+    }
+}
+
+export component TextArea inherits Rectangle {
+    in-out property <string> text;
+    in property <string> placeholder;
+    in property <bool> enabled: true;
+    in property <bool> read-only;
+    callback edited(string);
+
+    accessible-role: text-input;
+    accessible-value: root.text;
+    forward-focus: input;
+
+    min-height: 60px;
+
+    FieldFrame {
+        hover: touch.has-hover;
+        focused: input.has-focus;
+        enabled: root.enabled;
+    }
+
+    touch := TouchArea {
+        mouse-cursor: MouseCursor.text;
+        clicked => { input.focus(); }
+    }
+
+    area := ScrollArea {
+        x: 1px;
+        y: 1px;
+        width: parent.width - 2px;
+        height: parent.height - 2px;
+        content-height: input.preferred-height + 8px;
+
+        if root.text == "" && !input.has-focus: Text {
+            x: 4px;
+            y: 3px;
+            text: root.placeholder;
+            color: Theme.placeholder;
+            font-family: Theme.font-family;
+            font-size: Theme.font-size;
+            font-italic: true;
+        }
+        input := TextInput {
+            x: 4px;
+            y: 3px;
+            width: parent.width - 8px;
+            height: max(self.preferred-height, area.height - 6px);
+            text <=> root.text;
+            enabled: root.enabled;
+            read-only: root.read-only;
+            single-line: false;
+            wrap: word-wrap;
+            color: root.enabled ? Theme.text : Theme.disabled-text;
+            font-family: Theme.font-family;
+            font-size: Theme.font-size;
+            selection-background-color: Theme.hds ? #000000 : #3399ff;
+            selection-foreground-color: #ffffff;
+            edited => { root.edited(self.text); }
+            // Keep the line of the cursor in view.
+            cursor-position-changed(position) => {
+                if position.y < area.offset {
+                    area.scroll-to(position.y);
+                } else if position.y + 20px > area.offset + area.height {
+                    area.scroll-to(position.y + 20px - area.height);
+                }
+            }
+        }
+    }
+}

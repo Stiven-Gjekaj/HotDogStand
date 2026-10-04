@@ -1,0 +1,138 @@
+// A drop-down list, like the combo box of Windows 7 that the person cannot
+// type into.
+
+import { Theme } from "../theme.slint";
+
+export component ComboBox inherits Rectangle {
+    in property <[string]> model;
+    in-out property <int> current-index: 0;
+    in property <bool> enabled: true;
+    callback selected(int);
+
+    property <string> current-text: root.current-index >= 0 && root.current-index < root.model.length
+        ? root.model[root.current-index] : "";
+
+    function choose(index: int) {
+        if index >= 0 && index < root.model.length && index != root.current-index {
+            root.current-index = index;
+            root.selected(index);
+        }
+    }
+
+    accessible-role: combobox;
+    accessible-value: root.current-text;
+    accessible-expandable: true;
+    accessible-expanded: false;
+    accessible-action-increment => { root.choose(root.current-index + 1); }
+    accessible-action-decrement => { root.choose(root.current-index - 1); }
+    forward-focus: focus;
+
+    height: Theme.control-height;
+    min-width: 90px;
+    border-radius: Theme.control-radius;
+    border-width: 1px;
+    border-color: !root.enabled ? #adb2b5
+        : touch.has-hover || focus.has-focus ? Theme.button-border-hover
+        : Theme.button-border;
+    background: !root.enabled ? #f4f4f4
+        : touch.pressed ? Theme.button-face-pressed
+        : touch.has-hover ? Theme.button-face-hover
+        : Theme.button-face;
+
+    HorizontalLayout {
+        padding-left: 6px;
+        padding-right: 6px;
+        spacing: 6px;
+        Text {
+            text: root.current-text;
+            color: root.enabled ? Theme.text : Theme.disabled-text;
+            font-family: Theme.font-family;
+            font-size: Theme.font-size;
+            vertical-alignment: center;
+            overflow: elide;
+            horizontal-stretch: 1;
+        }
+        Path {
+            width: 7px;
+            height: 4px;
+            y: (parent.height - 4px) / 2;
+            viewbox-width: 7;
+            viewbox-height: 4;
+            commands: "M 0 0 L 7 0 L 3.5 4 Z";
+            fill: root.enabled ? #000000 : Theme.disabled-text;
+        }
+    }
+
+    if focus.has-focus: Rectangle {
+        x: 3px;
+        y: 3px;
+        width: parent.width - 22px;
+        height: parent.height - 6px;
+        border-width: 1px;
+        border-color: Theme.focus-ring.with-alpha(0.5);
+    }
+
+    touch := TouchArea {
+        enabled: root.enabled;
+        clicked => {
+            focus.focus();
+            popup.show();
+        }
+    }
+
+    focus := FocusScope {
+        enabled: root.enabled;
+        key-pressed(event) => {
+            if event.text == Key.UpArrow {
+                root.choose(root.current-index - 1);
+                return accept;
+            }
+            if event.text == Key.DownArrow {
+                root.choose(root.current-index + 1);
+                return accept;
+            }
+            if event.text == " " || event.text == "\n" {
+                popup.show();
+                return accept;
+            }
+            reject
+        }
+    }
+
+    popup := PopupWindow {
+        x: 0;
+        y: root.height;
+        width: max(root.width, 120px);
+        Rectangle {
+            background: Theme.content;
+            border-width: 1px;
+            border-color: Theme.menu-border;
+            drop-shadow-blur: 4px;
+            drop-shadow-offset-x: 2px;
+            drop-shadow-offset-y: 2px;
+            drop-shadow-color: #00000040;
+            VerticalLayout {
+                padding: 1px;
+                for item[i] in root.model: Rectangle {
+                    height: 20px;
+                    background: row-touch.has-hover ? (Theme.hds ? #000000 : #3399ff) : transparent;
+                    HorizontalLayout {
+                        padding-left: 5px;
+                        padding-right: 5px;
+                        Text {
+                            text: item;
+                            color: row-touch.has-hover ? #ffffff : Theme.text;
+                            font-family: Theme.font-family;
+                            font-size: Theme.font-size;
+                            font-weight: i == root.current-index ? 600 : 400;
+                            vertical-alignment: center;
+                        }
+                    }
+                    row-touch := TouchArea {
+                        clicked => { root.choose(i); }
+                    }
+                }
+            }
+        }
+    }
+}

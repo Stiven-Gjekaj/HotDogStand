@@ -1,0 +1,142 @@
+// A vertical scroll bar like the one of Windows 7, and an area that scrolls
+// with it.
+
+import { Theme } from "../theme.slint";
+
+export component ScrollBar inherits Rectangle {
+    // The position of the content, from 0 to `maximum`.
+    in-out property <length> value;
+    in property <length> maximum;
+    in property <length> page-size;
+    callback scrolled(length);
+
+    property <length> track: root.height - 2 * root.width;
+    property <length> thumb-size: root.maximum <= 0 ? root.track
+        : max(17px, root.track * root.page-size / (root.page-size + root.maximum));
+    property <length> thumb-y: root.width + (root.maximum <= 0 ? 0 : (root.track - root.thumb-size) * root.value / root.maximum);
+
+    function set-value(v: length) {
+        root.value = clamp(v, 0, max(0, root.maximum));
+        root.scrolled(root.value);
+    }
+
+    width: 17px;
+    background: @linear-gradient(90deg, #e2e2e2 0%, #ededed 15%, #f6f6f6 100%);
+
+    // A click on the track moves one page.
+    TouchArea {
+        clicked => {
+            if self.mouse-y < root.thumb-y {
+                root.set-value(root.value - root.page-size);
+            } else {
+                root.set-value(root.value + root.page-size);
+            }
+        }
+    }
+
+    for button[i] in [0, 1]: Rectangle {
+        y: i == 0 ? 0 : root.height - root.width;
+        width: root.width;
+        height: root.width;
+        border-radius: 2px;
+        border-width: arrow-touch.has-hover ? 1px : 0px;
+        border-color: #3c7fb1;
+        background: arrow-touch.has-hover
+            ? @linear-gradient(90deg, #e3f4fc 0%, #b8e3fb 100%)
+            : transparent;
+        Path {
+            width: 7px;
+            height: 4px;
+            viewbox-width: 7;
+            viewbox-height: 4;
+            commands: i == 0 ? "M 0 4 L 3.5 0 L 7 4 Z" : "M 0 0 L 3.5 4 L 7 0 Z";
+            fill: #606060;
+        }
+        arrow-touch := TouchArea {
+            clicked => {
+                root.set-value(root.value + (i == 0 ? -1 : 1) * Theme.row-height * 3);
+            }
+        }
+    }
+
+    if root.maximum > 0: Rectangle {
+        x: 1px;
+        y: root.thumb-y;
+        width: root.width - 2px;
+        height: root.thumb-size;
+        border-radius: 2px;
+        border-width: 1px;
+        border-color: thumb-touch.has-hover || thumb-touch.pressed ? #3c7fb1 : #959595;
+        background: thumb-touch.has-hover || thumb-touch.pressed
+            ? @linear-gradient(90deg, #e3f4fc 0%, #b8e3fb 50%, #a6d9f4 51%, #b6e2f8 100%)
+            : @linear-gradient(90deg, #f3f3f3 0%, #e8e8e8 50%, #d5d5d5 51%, #e1e1e1 100%);
+
+        // The grip in the middle of the thumb.
+        if self.height > 20px: VerticalLayout {
+            alignment: center;
+            spacing: 1px;
+            for line in 4: Rectangle {
+                height: 1px;
+                width: 7px;
+                x: (parent.width - 7px) / 2;
+                background: #9a9a9a;
+            }
+        }
+
+        thumb-touch := TouchArea {
+            property <length> start-value;
+            pointer-event(event) => {
+                if event.kind == PointerEventKind.down {
+                    self.start-value = root.value;
+                }
+            }
+            moved => {
+                if self.pressed && root.track > root.thumb-size {
+                    root.set-value(self.start-value + (self.mouse-y - self.pressed-y) * root.maximum / (root.track - root.thumb-size));
+                }
+            }
+        }
+    }
+}
+
+// An area that scrolls up and down. The content goes in it as children, and
+// the parent gives its height.
+export component ScrollArea inherits Rectangle {
+    in property <length> content-height;
+    // How far the content is scrolled. A parent sets it to show a row.
+    out property <length> offset: -root.position;
+
+    // The position of the content, which is the negative of the offset. It
+    // is bound both ways to the flickable, so a scroll by the person and a
+    // change by the parent both reach it.
+    property <length> position;
+    property <length> maximum: max(0, root.content-height - root.height);
+
+    public function scroll-to(value: length) {
+        root.position = -clamp(value, 0, root.maximum);
+    }
+
+    clip: true;
+
+    flick := Flickable {
+        x: 0;
+        y: 0;
+        width: root.width - (root.maximum > 0 ? bar.width : 0);
+        height: root.height;
+        content-height: max(root.content-height, root.height);
+        content-width: self.width;
+        content-y <=> root.position;
+        @children
+    }
+
+    bar := ScrollBar {
+        x: root.width - self.width;
+        y: 0;
+        height: root.height;
+        visible: root.maximum > 0;
+        value: -root.position;
+        maximum: root.maximum;
+        page-size: root.height;
+        scrolled(v) => { root.scroll-to(v); }
+    }
+}

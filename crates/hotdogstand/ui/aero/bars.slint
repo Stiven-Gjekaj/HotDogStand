@@ -1,0 +1,167 @@
+// The command bar, the status bar, the information bar, the tabs, and the
+// text of a field.
+
+import { Theme } from "../theme.slint";
+
+export component CommandBar inherits Rectangle {
+    height: 33px;
+    background: Theme.command-bar;
+    Rectangle {
+        y: parent.height - 1px;
+        height: 1px;
+        background: Theme.command-bar-border;
+    }
+    HorizontalLayout {
+        padding-left: 4px;
+        padding-right: 6px;
+        padding-top: 3px;
+        padding-bottom: 4px;
+        spacing: 2px;
+        @children
+    }
+}
+
+export component StatusBar inherits Rectangle {
+    in property <string> text;
+    height: 23px;
+    background: Theme.status-bar;
+    Rectangle {
+        y: 0;
+        height: 1px;
+        background: Theme.status-bar-border;
+    }
+    HorizontalLayout {
+        padding-left: 8px;
+        padding-right: 8px;
+        Text {
+            text: root.text;
+            color: Theme.text;
+            font-family: Theme.font-family;
+            font-size: Theme.font-size;
+            vertical-alignment: center;
+            overflow: elide;
+        }
+    }
+}
+
+// A yellow bar that holds a message for the person, with a button that closes
+// it.
+export component InfoBar inherits Rectangle {
+    in-out property <string> text;
+    height: self.text == "" ? 0px : 26px;
+    visible: self.text != "";
+    background: Theme.info-bar;
+    Rectangle {
+        y: parent.height - 1px;
+        height: 1px;
+        background: Theme.info-bar-border;
+    }
+    HorizontalLayout {
+        padding-left: 8px;
+        padding-right: 4px;
+        spacing: 6px;
+        Path {
+            width: 14px;
+            height: 14px;
+            y: (parent.height - 14px) / 2;
+            viewbox-width: 14;
+            viewbox-height: 14;
+            commands: "M 7 1 L 13 13 L 1 13 Z";
+            fill: Theme.hds ? #ffff00 : #f2c200;
+            stroke: Theme.hds ? #ff0000 : #9a7a00;
+            stroke-width: 1px;
+        }
+        Text {
+            text: root.text;
+            color: Theme.info-bar-text;
+            font-family: Theme.font-family;
+            font-size: Theme.font-size;
+            vertical-alignment: center;
+            overflow: elide;
+            horizontal-stretch: 1;
+        }
+        Rectangle {
+            width: 18px;
+            close-text := Text {
+                text: "×";
+                color: close-touch.has-hover ? Theme.link : Theme.info-bar-text;
+                font-size: 14px;
+            }
+            close-touch := TouchArea {
+                clicked => { root.text = ""; }
+            }
+        }
+    }
+}
+
+export component TabBar inherits Rectangle {
+    in property <[string]> tabs;
+    in-out property <int> current-index;
+    callback changed(int);
+
+    height: 22px;
+    HorizontalLayout {
+        padding-left: 4px;
+        spacing: -1px;
+        alignment: start;
+        for tab[i] in root.tabs: Rectangle {
+            property <bool> selected: i == root.current-index;
+            width: tab-text.preferred-width + 20px;
+            height: self.selected ? 22px : 20px;
+            y: self.selected ? 0px : 2px;
+            border-width: 1px;
+            border-color: Theme.tab-border;
+            border-top-left-radius: 2px;
+            border-top-right-radius: 2px;
+            background: self.selected ? Theme.tab-selected
+                : tab-touch.has-hover ? Theme.button-face-hover
+                : Theme.tab-face;
+            // The selected tab joins the panel below it.
+            if selected: Rectangle {
+                y: parent.height - 1px;
+                x: 1px;
+                width: parent.width - 2px;
+                height: 1px;
+                background: Theme.tab-selected;
+            }
+            tab-text := Text {
+                text: tab;
+                color: Theme.text;
+                font-family: Theme.font-family;
+                font-size: Theme.font-size;
+            }
+            tab-touch := TouchArea {
+                clicked => {
+                    root.current-index = i;
+                    root.changed(i);
+                }
+            }
+        }
+    }
+}
+
+// The panel under a tab bar.
+export component TabPanel inherits Rectangle {
+    background: Theme.tab-selected;
+    border-width: 1px;
+    border-color: Theme.tab-border;
+    VerticalLayout {
+        padding: 10px;
+        spacing: 8px;
+        @children
+    }
+}
+
+export component FieldLabel inherits Text {
+    color: Theme.text;
+    font-family: Theme.font-family;
+    font-size: Theme.font-size;
+    vertical-alignment: center;
+}
+
+export component Heading inherits Text {
+    color: Theme.hds ? #000000 : #1e395b;
+    font-family: Theme.font-family;
+    font-size: 15px;
+    vertical-alignment: center;
+}

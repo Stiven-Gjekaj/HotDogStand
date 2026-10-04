@@ -1,0 +1,77 @@
+// A drop-down menu for a button of the command bar.
+
+import { Theme } from "theme.slint";
+
+export struct MenuItem {
+    text: string,
+    checked: bool,
+    // An item with no text draws a line between two groups.
+    separator: bool,
+}
+
+export component Menu inherits PopupWindow {
+    in property <[MenuItem]> items;
+    callback activated(int);
+
+    width: 220px;
+
+    Rectangle {
+        background: Theme.menu-background;
+        border-width: 1px;
+        border-color: Theme.menu-border;
+        drop-shadow-blur: 5px;
+        drop-shadow-offset-x: 2px;
+        drop-shadow-offset-y: 2px;
+        drop-shadow-color: #00000050;
+
+        // The gutter of the icons, at the left, as in Windows 7.
+        Rectangle {
+            x: 28px;
+            width: 1px;
+            background: Theme.hds ? #000000 : #e2e3e3;
+        }
+
+        VerticalLayout {
+            padding: 2px;
+            for item[i] in root.items: Rectangle {
+                height: item.separator ? 7px : 22px;
+                border-radius: 3px;
+                border-width: !item.separator && touch.has-hover ? 1px : 0px;
+                border-color: Theme.menu-hover-border;
+                background: !item.separator && touch.has-hover ? Theme.menu-hover : transparent;
+
+                if item.separator: Rectangle {
+                    x: 30px;
+                    y: 3px;
+                    height: 1px;
+                    width: parent.width - 32px;
+                    background: Theme.hds ? #000000 : #e0e0e0;
+                }
+                if item.checked: Path {
+                    x: 9px;
+                    y: (parent.height - 9px) / 2;
+                    width: 10px;
+                    height: 9px;
+                    viewbox-width: 10;
+                    viewbox-height: 9;
+                    commands: "M 1 4.5 L 4 7.5 L 9 1.5";
+                    stroke: touch.has-hover ? Theme.menu-hover-text : Theme.text;
+                    stroke-width: 1.6px;
+                    fill: transparent;
+                }
+                if !item.separator: Text {
+                    x: 34px;
+                    text: item.text;
+                    color: touch.has-hover ? Theme.menu-hover-text : Theme.text;
+                    font-family: Theme.font-family;
+                    font-size: Theme.font-size;
+                    vertical-alignment: center;
+                }
+                touch := TouchArea {
+                    enabled: !item.separator;
+                    clicked => { root.activated(i); }
+                }
+            }
+        }
+    }
+}
