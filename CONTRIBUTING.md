@@ -61,6 +61,9 @@ To work on a copy of the data that is not your real workspace, set
 | A control | `crates/hotdogstand/ui/aero/` |
 | A window | `crates/hotdogstand/ui/` and `crates/hotdogstand/src/windows/` |
 | A color or a size | `crates/hotdogstand/ui/theme.slint` |
+| The logo or the icon of the application | `assets/hotdogstand.svg`, then run `scripts/make-icons.sh` and commit what it writes |
+| The macOS bundle | `packaging/macos/Info.plist` and `scripts/bundle-macos.sh` |
+| The Linux desktop entry | `packaging/linux/hotdogstand.desktop` and `scripts/install-linux.sh` |
 
 ## Rules that this project holds to
 
