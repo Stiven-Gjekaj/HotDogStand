@@ -1,5 +1,11 @@
 // The main window: the ticket list.
 
+// The font of the application. It ships with the binary, so the text looks
+// the same on each system. See fonts/LICENSE.txt.
+import "fonts/selawk.ttf";
+import "fonts/selawksb.ttf";
+import "fonts/selawkb.ttf";
+
 import { AeroFrame, ResizeEdge, CommandBar, CommandButton, TextField, ComboBox, DetailsList, StatusBar, InfoBar, FieldLabel } from "aero/index.slint";
 import { Theme, ThemeName } from "theme.slint";
 import { TicketRow, LabelChip } from "types.slint";
