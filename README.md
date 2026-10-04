@@ -36,6 +36,10 @@ _One native window, one SQLite file, no server, no account_
 
 ---
 
+<p align="center">
+  <img src="assets/screenshots/ticket-list.png" alt="The ticket list of HotDogStand, with twelve tickets of an office, their labels, their assignees, and the time of their last change" width="900">
+</p>
+
 ## Overview
 
 **HotDogStand** keeps your tickets: the bugs, the requests, and the work that
@@ -80,6 +84,26 @@ Windows 3.1. HotDogStand ships it as a theme.
 </td>
 </tr>
 </table>
+
+## Screenshots
+
+<table>
+<tr>
+<td width="50%" valign="top">
+<img src="assets/screenshots/ticket-history.png" alt="The History tab of a ticket, with its events and a comment in Markdown">
+<p align="center"><i>The history of a ticket, with a comment in Markdown</i></p>
+</td>
+<td width="50%" valign="top">
+<img src="assets/screenshots/ticket-list-dark.png" alt="The ticket list in the dark form of the Aero theme">
+<p align="center"><i>The dark form of Aero</i></p>
+<img src="assets/screenshots/ticket-list-hot-dog-stand.png" alt="The ticket list in the Hot Dog Stand theme, red and yellow">
+<p align="center"><i>Hot Dog Stand</i></p>
+</td>
+</tr>
+</table>
+
+The screenshots show the application with the workspace that
+`cargo run -p hds-store --example demo -- demo.db` makes.
 
 ## Quick Start
 
