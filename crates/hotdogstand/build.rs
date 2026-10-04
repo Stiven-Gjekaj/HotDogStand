@@ -16,9 +16,7 @@ fn windows_resources() {
         .set_icon("../../assets/icons/hotdogstand.ico")
         .set("ProductName", "HotDogStand")
         .set("FileDescription", "HotDogStand");
-    resource
-        .compile()
-        .expect("the Windows resources compile");
+    resource.compile().expect("the Windows resources compile");
 }
 
 #[cfg(not(windows))]
