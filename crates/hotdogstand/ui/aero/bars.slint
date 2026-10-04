@@ -99,6 +99,7 @@ export component TabBar inherits Rectangle {
     in-out property <int> current-index;
     callback changed(int);
 
+    accessible-role: AccessibleRole.tab-list;
     height: 22px;
     HorizontalLayout {
         padding-left: 4px;
@@ -106,6 +107,14 @@ export component TabBar inherits Rectangle {
         alignment: start;
         for tab[i] in root.tabs: Rectangle {
             property <bool> selected: i == root.current-index;
+            accessible-role: AccessibleRole.tab;
+            accessible-label: tab;
+            accessible-item-selectable: true;
+            accessible-item-selected: self.selected;
+            accessible-action-default => {
+                root.current-index = i;
+                root.changed(i);
+            }
             width: tab-text.preferred-width + 20px;
             height: self.selected ? 22px : 20px;
             y: self.selected ? 0px : 2px;
