@@ -50,7 +50,7 @@ A step marked "built, not tried" has code but nobody used it by hand yet.
 ### The controls
 
 - `theme.slint` with the Aero theme
-- Selawik, with its licence
+- An open font with its licence, now Open Sans
 - The window frame and the title bar, with move and resize
 - The setting that uses the frame of the system
 - Push button, text field, multi-line text field, combo box
@@ -115,11 +115,12 @@ with:
 
 ## Known problems
 
-- [ ] On macOS, the menus of the menu bar show only while the main window
-      has the focus. A ticket window, the People window, and the Labels
-      window have no menu bar of their own.
-- [ ] Selawik has no italic face, so Markdown in italics shows upright.
-- [ ] A link in Markdown shows as a link, but a click on it does nothing.
+Version 0.1.1 corrects the three problems that 0.1.0 had. The menus of the
+macOS menu bar stay with each window, Markdown in italics shows in italics,
+and a click on a web or mail link opens it.
+
+- [ ] The packages are not signed, so Windows SmartScreen and macOS
+      Gatekeeper warn before the first start.
 
 ## After the first version
 
