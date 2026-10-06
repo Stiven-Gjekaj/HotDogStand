@@ -1,10 +1,14 @@
 // The main window: the ticket list.
 
 // The font of the application. It ships with the binary, so the text looks
-// the same on each system. See fonts/LICENSE.txt.
-import "fonts/selawk.ttf";
-import "fonts/selawksb.ttf";
-import "fonts/selawkb.ttf";
+// the same on each system. Open Sans has an italic face for each weight, so
+// Markdown in italics shows in italics. See fonts/OFL.txt.
+import "fonts/OpenSans-Regular.ttf";
+import "fonts/OpenSans-Italic.ttf";
+import "fonts/OpenSans-SemiBold.ttf";
+import "fonts/OpenSans-SemiBoldItalic.ttf";
+import "fonts/OpenSans-Bold.ttf";
+import "fonts/OpenSans-BoldItalic.ttf";
 
 import { AeroFrame, ResizeEdge, CommandBar, CommandButton, TextField, ComboBox, DetailsList, StatusBar, InfoBar, FieldLabel } from "aero/index.slint";
 import { Theme, ThemeName } from "theme.slint";
