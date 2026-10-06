@@ -22,8 +22,12 @@ const APP_ID: &str = "hotdogstand";
 
 fn main() -> anyhow::Result<()> {
     let started = std::time::Instant::now();
-    if cfg!(target_os = "linux") {
-        slint::set_xdg_app_id(APP_ID)?;
+    // The id only matches the windows to their icon, so a backend that does
+    // not take it, such as the headless one, does not stop the application.
+    if cfg!(target_os = "linux")
+        && let Err(error) = slint::set_xdg_app_id(APP_ID)
+    {
+        eprintln!("hotdogstand: the desktop id is not set: {error}");
     }
     let path = hds_store::workspace_path()?;
     let store = match hds_store::Store::open(&path) {
