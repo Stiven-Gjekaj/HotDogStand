@@ -80,7 +80,7 @@ No account, no server, and no network means that nothing can stop this.
             people.slint   the people window
             labels.slint   the labels window
             about.slint    the about window, which credits Slint
-          fonts/           Selawik, with its licence
+          fonts/           Open Sans, with its licence
           icons/
           build.rs         compiles the `.slint` files
       .github/
@@ -251,10 +251,16 @@ that an import can read it without loss.
 - Each theme has a light form and a dark form. Windows 7 had no dark mode, so
   the dark form of Aero keeps the shapes and the gloss, and makes the glass a
   dark slate.
-- The font is Selawik, which Microsoft publishes under the SIL Open Font
-  Licence as an open replacement for Segoe UI. The binary holds it, with its
-  licence beside it in `ui/fonts/`. The project does not ship Segoe UI,
+- The font is Open Sans, under the SIL Open Font Licence. Steve Matteson
+  drew it, and he also drew Segoe UI, so the two look alike. The binary holds
+  it, with its licence beside it in `ui/fonts/`. It has an italic face for
+  each weight, which Markdown needs. The project does not ship Segoe UI,
   because its licence does not permit that.
+- The menus of the macOS menu bar are in `ui/app-window.slint`. Each window
+  inherits that file, so the menus stay while any window has the focus.
+- A click on a link in Markdown opens a web page or an e-mail address. A link
+  of another kind stays closed, because the text of a ticket can come from an
+  export that another person wrote.
 - The project draws its own icons, or takes them from a set with an open
   licence. It uses no icon, wallpaper, logo, or sound from Windows.
 - Keyboard use works: Tab moves between the controls, the arrow keys move in
