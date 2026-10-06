@@ -13,6 +13,34 @@ workspace file from an older one.
 
 Nothing yet.
 
+## 0.1.1 (2026-10-06)
+
+This release corrects the problems that 0.1.0 had.
+
+### Corrections
+
+- On macOS, the menus of the menu bar stay while any window of HotDogStand
+  has the focus. In 0.1.0 they showed only with the main window.
+- Markdown in italics shows in italics. The font is now Open Sans, which has
+  an italic face for each weight. Open Sans replaces Selawik.
+- A click on a link in Markdown opens it, when it is a web page or an e-mail
+  address. A link of another kind stays closed.
+- On Linux, the application starts when the backend does not take the desktop
+  id.
+
+### Tests
+
+- A smoke test starts the application on Linux, macOS, and Windows in CI. It
+  makes a ticket, opens it, adds a comment, and closes it, through the
+  accessible controls of the windows.
+
+### Known problems
+
+- The packages are not signed. Windows SmartScreen and macOS Gatekeeper warn
+  before the first start. The readme says how to open the application.
+- A click on a link was tested by its rule, not by a click in the running
+  application.
+
 ## 0.1.0 (2026-10-04)
 
 The first release. HotDogStand keeps the tickets of one workspace in one
