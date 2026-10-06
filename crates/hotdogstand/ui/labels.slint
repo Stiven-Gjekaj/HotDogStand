@@ -1,10 +1,11 @@
 // The Labels window: the names and the colors of the labels.
 
 import { AeroFrame, ResizeEdge, Button, TextField, InfoBar, FieldLabel, ScrollArea } from "aero/index.slint";
+import { AppWindow } from "app-window.slint";
 import { Theme } from "theme.slint";
 import { LabelChip } from "types.slint";
 
-export component LabelsWindow inherits Window {
+export component LabelsWindow inherits AppWindow {
     in property <bool> system-frame;
     in property <[LabelChip]> labels;
     in-out property <int> current: -1;

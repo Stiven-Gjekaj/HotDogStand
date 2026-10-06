@@ -2,6 +2,7 @@
 // "History" for the comments and the events.
 
 import { AeroFrame, ResizeEdge, Button, CheckBox, TextField, TextArea, ComboBox, InfoBar, TabBar, TabPanel, FieldLabel, ScrollArea } from "aero/index.slint";
+import { AppWindow } from "app-window.slint";
 import { Theme } from "theme.slint";
 import { LabelChip, HistoryEntry, Markdown } from "types.slint";
 
@@ -78,7 +79,7 @@ component HistoryItem inherits Rectangle {
     }
 }
 
-export component TicketWindow inherits Window {
+export component TicketWindow inherits AppWindow {
     in property <bool> system-frame;
     in property <bool> is-maximized;
 

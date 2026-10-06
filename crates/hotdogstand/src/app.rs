@@ -20,8 +20,8 @@ use slint::{Color, ComponentHandle, Model, ModelRc, SharedString, VecModel};
 use crate::format::{self, Names};
 use crate::frame;
 use crate::ui::{
-    AboutWindow, HistoryEntry, LabelChip, LabelsWindow, MainWindow, Markdown, PeopleWindow,
-    PersonRow, Theme, ThemeName, TicketRow, TicketWindow,
+    AboutWindow, AppMenu, HistoryEntry, LabelChip, LabelsWindow, MainWindow, Markdown,
+    PeopleWindow, PersonRow, Theme, ThemeName, TicketRow, TicketWindow,
 };
 
 /// The column of the list that each header sorts by. The labels column does
@@ -129,6 +129,53 @@ macro_rules! style {
         let theme = $window.global::<Theme<'_>>();
         theme.set_name($app.theme.get());
         theme.set_dark($app.dark.get());
+        let menu = $window.global::<AppMenu<'_>>();
+        menu.set_native(cfg!(target_os = "macos"));
+        menu.set_system_frame($app.system_frame.get());
+        menu.set_mark_aero($app.theme.get() == ThemeName::Aero);
+        menu.set_mark_hot_dog_stand($app.theme.get() == ThemeName::HotDogStand);
+        menu.set_mark_dark($app.dark.get());
+        menu.set_mark_system_frame($app.system_frame.get());
+    }};
+}
+
+/// Connects the menus of the macOS menu bar of a window to the application.
+macro_rules! wire_menu {
+    ($app:expr, $window:expr) => {{
+        let menu = $window.global::<AppMenu<'_>>();
+        let weak = Rc::downgrade($app);
+        let call = move |f: fn(&Rc<App>)| {
+            let weak = weak.clone();
+            move || {
+                if let Some(app) = weak.upgrade() {
+                    f(&app);
+                }
+            }
+        };
+        menu.on_new_ticket(call(|app| app.open_ticket(None)));
+        menu.on_export_json(call(|app| app.export_json()));
+        menu.on_export_csv(call(|app| app.export_csv()));
+        menu.on_show_people(call(|app| app.show_people()));
+        menu.on_show_labels(call(|app| app.show_labels()));
+        menu.on_show_about(call(|app| app.show_about()));
+        let weak = Rc::downgrade($app);
+        menu.on_set_theme(move |theme| {
+            if let Some(app) = weak.upgrade() {
+                app.set_theme(theme);
+            }
+        });
+        let weak = Rc::downgrade($app);
+        menu.on_set_dark(move |on| {
+            if let Some(app) = weak.upgrade() {
+                app.set_dark(on);
+            }
+        });
+        let weak = Rc::downgrade($app);
+        menu.on_set_system_frame(move |on| {
+            if let Some(app) = weak.upgrade() {
+                app.set_system_frame(on);
+            }
+        });
     }};
 }
 
@@ -218,8 +265,7 @@ impl App {
         let main = &self.main;
         style!(self, main);
         main.set_system_frame(self.system_frame.get());
-        main.set_native_menu(cfg!(target_os = "macos"));
-        self.mark_menus();
+        wire_menu!(self, main);
         main.set_workspace_name(
             self.store
                 .borrow()
@@ -486,18 +532,8 @@ impl App {
         self.restyle();
     }
 
-    /// Sets the check marks of the macOS menus from the settings.
-    fn mark_menus(&self) {
-        let main = &self.main;
-        main.set_mark_aero(self.theme.get() == ThemeName::Aero);
-        main.set_mark_hot_dog_stand(self.theme.get() == ThemeName::HotDogStand);
-        main.set_mark_dark(self.dark.get());
-        main.set_mark_system_frame(self.system_frame.get());
-    }
-
     /// Gives every open window the current theme.
     fn restyle(&self) {
-        self.mark_menus();
         style!(self, &self.main);
         for view in self.ticket_windows.borrow().values() {
             style!(self, &view.window);
@@ -520,7 +556,7 @@ impl App {
             self.report(error);
         }
         self.main.set_system_frame(on);
-        self.mark_menus();
+        self.restyle();
         for view in self.ticket_windows.borrow().values() {
             view.window.set_system_frame(on);
         }
@@ -556,6 +592,7 @@ impl App {
             key
         });
         style!(self, &window);
+        wire_menu!(self, &window);
         window.set_system_frame(self.system_frame.get());
         wire_frame!(window, resizable);
         self.wire_ticket(&window, key);
@@ -920,6 +957,7 @@ impl App {
             Err(error) => return self.report(error),
         };
         style!(self, &window);
+        wire_menu!(self, &window);
         window.set_system_frame(self.system_frame.get());
         wire_frame!(window);
 
@@ -1052,6 +1090,7 @@ impl App {
             Err(error) => return self.report(error),
         };
         style!(self, &window);
+        wire_menu!(self, &window);
         window.set_system_frame(self.system_frame.get());
         wire_frame!(window);
 
@@ -1180,6 +1219,7 @@ impl App {
             Err(error) => return self.report(error),
         };
         style!(self, &window);
+        wire_menu!(self, &window);
         window.set_system_frame(self.system_frame.get());
         window.set_version(env!("CARGO_PKG_VERSION").into());
         window.set_workspace_path(self.path.display().to_string().into());

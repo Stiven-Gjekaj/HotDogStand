@@ -1,10 +1,11 @@
 // The People window: the names that a ticket can be assigned to.
 
 import { AeroFrame, ResizeEdge, Button, TextField, InfoBar, FieldLabel, ScrollArea } from "aero/index.slint";
+import { AppWindow } from "app-window.slint";
 import { Theme } from "theme.slint";
 import { PersonRow } from "types.slint";
 
-export component PeopleWindow inherits Window {
+export component PeopleWindow inherits AppWindow {
     in property <bool> system-frame;
     in property <[PersonRow]> people;
     in-out property <int> current: -1;

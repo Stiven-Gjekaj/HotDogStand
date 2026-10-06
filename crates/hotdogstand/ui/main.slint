@@ -10,25 +10,19 @@ import { AeroFrame, ResizeEdge, CommandBar, CommandButton, TextField, ComboBox, 
 import { Theme, ThemeName } from "theme.slint";
 import { TicketRow, LabelChip } from "types.slint";
 import { Menu, MenuItem } from "menu.slint";
+import { AppWindow, AppMenu } from "app-window.slint";
 
 export { Theme, ThemeName, ResizeEdge, TicketRow, LabelChip }
 export { Markdown } from "types.slint";
+export { AppMenu } from "app-window.slint";
 export { TicketWindow } from "ticket.slint";
 export { PeopleWindow } from "people.slint";
 export { LabelsWindow } from "labels.slint";
 export { AboutWindow } from "about.slint";
 
-export component MainWindow inherits Window {
+export component MainWindow inherits AppWindow {
     in property <bool> system-frame;
     in property <bool> is-maximized;
-    // True on macOS, where the menus go in the menu bar of the system.
-    in property <bool> native-menu;
-    // The check marks of the macOS menus. A click on a checkable item flips
-    // its mark, so the Rust code sets all of them again after each change.
-    in-out property <bool> mark-aero: true;
-    in-out property <bool> mark-hot-dog-stand;
-    in-out property <bool> mark-dark;
-    in-out property <bool> mark-system-frame;
     in property <string> workspace-name;
 
     in property <[TicketRow]> rows;
@@ -108,76 +102,6 @@ export component MainWindow inherits Window {
         }
     }
 
-    // The menus in the menu bar of macOS. The same actions are in the
-    // command bar of the window, for the systems that have no such bar.
-    if root.native-menu: MenuBar {
-        Menu {
-            title: "File";
-            MenuItem {
-                title: "New Ticket";
-                shortcut: @keys(Meta + N);
-                activated => { root.new-ticket(); }
-            }
-            MenuSeparator { }
-            MenuItem {
-                title: "Export Workspace to JSON...";
-                shortcut: @keys(Meta + E);
-                activated => { root.export-json(); }
-            }
-            MenuItem {
-                title: "Export List to CSV...";
-                activated => { root.export-csv(); }
-            }
-        }
-        Menu {
-            title: "Workspace";
-            MenuItem {
-                title: "People...";
-                activated => { root.show-people(); }
-            }
-            MenuItem {
-                title: "Labels...";
-                activated => { root.show-labels(); }
-            }
-        }
-        Menu {
-            title: "View";
-            MenuItem {
-                title: "Aero";
-                checkable: true;
-                checked <=> root.mark-aero;
-                activated => { root.set-theme(ThemeName.aero); }
-            }
-            MenuItem {
-                title: "Hot Dog Stand";
-                checkable: true;
-                checked <=> root.mark-hot-dog-stand;
-                activated => { root.set-theme(ThemeName.hot-dog-stand); }
-            }
-            MenuSeparator { }
-            MenuItem {
-                title: "Dark Mode";
-                checkable: true;
-                checked <=> root.mark-dark;
-                shortcut: @keys(Meta + Shift + D);
-                activated => { root.set-dark(!Theme.dark); }
-            }
-            MenuItem {
-                title: "Use the System Frame";
-                checkable: true;
-                checked <=> root.mark-system-frame;
-                activated => { root.set-system-frame(!root.system-frame); }
-            }
-        }
-        Menu {
-            title: "Help";
-            MenuItem {
-                title: "About HotDogStand";
-                activated => { root.show-about(); }
-            }
-        }
-    }
-
     forward-focus: list;
 
     keys := FocusScope {
@@ -195,9 +119,9 @@ export component MainWindow inherits Window {
             // Shortcuts with Control, or with Command on macOS. The menu
             // bar of macOS holds its own shortcuts, so only the ones that it
             // does not have are here.
-            if (event.modifiers.control && !root.native-menu) || (event.modifiers.meta && root.native-menu) {
+            if (event.modifiers.control && !AppMenu.native) || (event.modifiers.meta && AppMenu.native) {
                 if event.text == "f" || event.text == "F" { search.focus(); return accept; }
-                if !root.native-menu && (event.text == "n" || event.text == "N") { root.new-ticket(); return accept; }
+                if !AppMenu.native && (event.text == "n" || event.text == "N") { root.new-ticket(); return accept; }
             }
             reject
         }

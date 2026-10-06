@@ -3,9 +3,10 @@
 
 import { AboutSlint } from "std-widgets.slint";
 import { AeroFrame, Button, FieldLabel, Heading } from "aero/index.slint";
+import { AppWindow } from "app-window.slint";
 import { Theme } from "theme.slint";
 
-export component AboutWindow inherits Window {
+export component AboutWindow inherits AppWindow {
     in property <bool> system-frame;
     in property <string> version;
     in property <string> workspace-path;

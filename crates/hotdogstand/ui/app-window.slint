@@ -1,0 +1,99 @@
+// The window that each window of HotDogStand inherits. It holds the menus of
+// the menu bar of macOS, so the menus stay while any window of the
+// application has the focus.
+
+import { Theme, ThemeName } from "theme.slint";
+
+// The state and the actions of the menus. The Rust code sets them on each
+// window, because each window has its own copy of a global.
+export global AppMenu {
+    // True on macOS, where the menus go in the menu bar of the system.
+    in property <bool> native;
+    in property <bool> system-frame;
+    // The check marks. A click on a checkable item flips its mark, so the
+    // Rust code sets all of them again after each change.
+    in-out property <bool> mark-aero: true;
+    in-out property <bool> mark-hot-dog-stand;
+    in-out property <bool> mark-dark;
+    in-out property <bool> mark-system-frame;
+
+    callback new-ticket();
+    callback export-json();
+    callback export-csv();
+    callback show-people();
+    callback show-labels();
+    callback show-about();
+    callback set-theme(ThemeName);
+    callback set-dark(bool);
+    callback set-system-frame(bool);
+}
+
+export component AppWindow inherits Window {
+    if AppMenu.native: MenuBar {
+        Menu {
+            title: "File";
+            MenuItem {
+                title: "New Ticket";
+                shortcut: @keys(Meta + N);
+                activated => { AppMenu.new-ticket(); }
+            }
+            MenuSeparator { }
+            MenuItem {
+                title: "Export Workspace to JSON...";
+                shortcut: @keys(Meta + E);
+                activated => { AppMenu.export-json(); }
+            }
+            MenuItem {
+                title: "Export List to CSV...";
+                activated => { AppMenu.export-csv(); }
+            }
+        }
+        Menu {
+            title: "Workspace";
+            MenuItem {
+                title: "People...";
+                activated => { AppMenu.show-people(); }
+            }
+            MenuItem {
+                title: "Labels...";
+                activated => { AppMenu.show-labels(); }
+            }
+        }
+        Menu {
+            title: "View";
+            MenuItem {
+                title: "Aero";
+                checkable: true;
+                checked <=> AppMenu.mark-aero;
+                activated => { AppMenu.set-theme(ThemeName.aero); }
+            }
+            MenuItem {
+                title: "Hot Dog Stand";
+                checkable: true;
+                checked <=> AppMenu.mark-hot-dog-stand;
+                activated => { AppMenu.set-theme(ThemeName.hot-dog-stand); }
+            }
+            MenuSeparator { }
+            MenuItem {
+                title: "Dark Mode";
+                checkable: true;
+                checked <=> AppMenu.mark-dark;
+                shortcut: @keys(Meta + Shift + D);
+                activated => { AppMenu.set-dark(!Theme.dark); }
+            }
+            MenuItem {
+                title: "Use the System Frame";
+                checkable: true;
+                checked <=> AppMenu.mark-system-frame;
+                activated => { AppMenu.set-system-frame(!AppMenu.system-frame); }
+            }
+        }
+        Menu {
+            title: "Help";
+            MenuItem {
+                title: "About HotDogStand";
+                activated => { AppMenu.show-about(); }
+            }
+        }
+    }
+}
