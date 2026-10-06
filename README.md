@@ -77,7 +77,7 @@ Windows 3.1. HotDogStand ships it as a theme.
 
 - A list view that sorts by each column and filters by each field
 - A window for each ticket, with its own button on the taskbar
-- Glass frames, Aero controls, and the Selawik font
+- Glass frames, Aero controls, and the Open Sans font
 - Two themes, Aero and Hot Dog Stand, each with a dark form
 - On macOS, the menus are in the menu bar of the system
 
@@ -178,9 +178,8 @@ export.
 
 HotDogStand copies a look. It is not a product of Microsoft, and Microsoft
 does not support it. Windows is a trademark of Microsoft Corporation. The
-project uses no icon, wallpaper, logo, or sound from Windows. The font,
-Selawik, is an open font that Microsoft publishes under the SIL Open Font
-Licence.
+project uses no icon, wallpaper, logo, or sound from Windows. The font, Open
+Sans, is under the SIL Open Font Licence.
 
 ## License
 
