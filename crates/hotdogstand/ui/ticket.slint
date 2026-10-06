@@ -52,6 +52,7 @@ component HistoryItem inherits Rectangle {
                     default-font-family: Theme.font-family;
                     default-font-size: Theme.font-size;
                     link-color: Theme.link;
+                    link-clicked(link) => { Markdown.open-link(link); }
                 }
             }
         }
@@ -282,6 +283,7 @@ export component TicketWindow inherits AppWindow {
                                         default-font-family: Theme.font-family;
                                         default-font-size: Theme.font-size;
                                         link-color: Theme.link;
+                                        link-clicked(link) => { Markdown.open-link(link); }
                                     }
                                 }
                             }

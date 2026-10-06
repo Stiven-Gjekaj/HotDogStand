@@ -120,6 +120,16 @@ pub fn markdown(text: &str) -> slint::StyledText {
         .unwrap_or_else(|_| slint::StyledText::from_plain_text(text))
 }
 
+/// True for a link that a click can open: a web page or an e-mail address.
+/// A link to a file or to another program stays closed, because the text of
+/// a ticket can come from an export that another person wrote.
+pub fn link_is_safe(link: &str) -> bool {
+    let link = link.trim().to_ascii_lowercase();
+    ["http://", "https://", "mailto:"]
+        .iter()
+        .any(|scheme| link.starts_with(scheme) && link.len() > scheme.len())
+}
+
 /// Reads `#rrggbb`. A color that is not in this form gives gray.
 pub fn hex_color(text: &str) -> (u8, u8, u8) {
     let digits = text.strip_prefix('#').unwrap_or_default();
@@ -229,6 +239,28 @@ mod tests {
             markdown("**bold**"),
             slint::StyledText::from_plain_text("**bold**")
         );
+    }
+
+    #[test]
+    fn only_web_and_mail_links_open() {
+        for link in [
+            "https://example.com/manual",
+            "HTTP://example.com",
+            " mailto:ana@example.com",
+        ] {
+            assert!(link_is_safe(link), "{link}");
+        }
+        for link in [
+            "file:///etc/passwd",
+            "javascript:alert(1)",
+            "ssh://server",
+            "C:\\Windows\\system32\\calc.exe",
+            "/Applications/Calculator.app",
+            "https://",
+            "",
+        ] {
+            assert!(!link_is_safe(link), "{link}");
+        }
     }
 
     #[test]

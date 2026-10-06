@@ -15,6 +15,7 @@ hds-core.workspace = true
 hds-store.workspace = true
 anyhow.workspace = true
 jiff.workspace = true
+open.workspace = true
 rfd.workspace = true
 # The winit accessor lets a window with no system frame ask the system to
 # resize it.

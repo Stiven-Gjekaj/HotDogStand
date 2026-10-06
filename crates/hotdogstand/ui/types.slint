@@ -36,4 +36,6 @@ export struct PersonRow {
 // that is not valid Markdown shows as plain text.
 export global Markdown {
     pure callback render(string) -> styled-text;
+    // Opens a link of the text in the browser of the system.
+    callback open-link(string);
 }

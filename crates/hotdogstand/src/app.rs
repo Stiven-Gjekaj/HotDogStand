@@ -630,6 +630,12 @@ impl App {
         window
             .global::<Markdown<'_>>()
             .on_render(|text| format::markdown(&text));
+        window.global::<Markdown<'_>>().on_open_link(|link| {
+            if format::link_is_safe(&link) {
+                // A system with no browser leaves the link as it is.
+                let _ = open::that_detached(link.as_str());
+            }
+        });
         let weak = window.as_weak();
         window.on_edit_comment(move |comment_id| {
             let Some(window) = weak.upgrade() else { return };
