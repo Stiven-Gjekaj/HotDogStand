@@ -52,8 +52,8 @@ one keeps its own licence:
   Slint, which the About window gives. If you distribute a changed version of
   the Software, you must follow the terms of that licence, or take Slint under
   the GPLv3 or a paid licence.
-- **Selawik**, the font, under the SIL Open Font Licence 1.1. The licence is
-  in the repository beside the font.
+- **Open Sans**, the font, under the SIL Open Font Licence 1.1. The licence
+  is in the repository beside the font.
 - **SQLite**, which is in the public domain.
 - The Rust crates that `Cargo.lock` names, each under its own licence.
 
