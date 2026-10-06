@@ -31,6 +31,8 @@ scope:
   or writes a file that the person did not choose.
 - A ticket or a comment in Markdown opens a link, runs a program, or loads a
   file without a click from the person.
+- A click on a link in Markdown opens something that is not a web page or an
+  e-mail address.
 - The application opens a network connection.
 - An export holds data that the person did not ask to export.
 - A crash or a fault in a migration damages or loses the data in a workspace
