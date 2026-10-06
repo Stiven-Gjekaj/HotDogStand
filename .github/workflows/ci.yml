@@ -35,3 +35,42 @@ jobs:
 
       - name: Test
         run: cargo test
+
+  # Starts the application and uses it as a person does, through the MCP
+  # server of Slint and its headless backend. See scripts/smoke_test.py.
+  smoke:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      SLINT_EMIT_DEBUG_INFO: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the Linux libraries
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libfontconfig-dev libxkbcommon-dev
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: smoke
+
+      - name: Build with the MCP server
+        run: cargo build -p hotdogstand --features slint/mcp
+
+      - name: Run the smoke test
+        shell: bash
+        run: python scripts/smoke_test.py target/debug/hotdogstand --headless --out smoke
+
+      - name: Keep the screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-${{ matrix.os }}
+          path: smoke
