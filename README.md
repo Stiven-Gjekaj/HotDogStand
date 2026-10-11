@@ -125,9 +125,13 @@ With a package manager:
 
 | System | Command |
 | ------ | ------- |
-| macOS | `brew install --cask --no-quarantine stiven-gjekaj/tap/hotdogstand` |
+| macOS | `brew install --cask stiven-gjekaj/tap/hotdogstand` |
 | Windows, Scoop | `scoop bucket add stiven-gjekaj https://github.com/Stiven-Gjekaj/scoop-bucket` then `scoop install stiven-gjekaj/hotdogstand` |
 | Windows, winget | `winget install Stiven-Gjekaj.HotDogStand`, after Microsoft accepts the package |
+
+No paid certificate signs the macOS app, so macOS asks before it opens it the
+first time: open System Settings, then Privacy & Security, and choose Open
+Anyway.
 
 Or download the file for your system from the
 [latest release](https://github.com/Stiven-Gjekaj/HotDogStand/releases/latest).
