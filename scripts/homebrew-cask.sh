@@ -40,8 +40,10 @@ cask "hotdogstand" do
   zap trash: "~/Library/Application Support/HotDogStand"
 
   caveats <<~EOS
-    No paid certificate signed HotDogStand, so macOS can refuse to open it.
-    Install it with --no-quarantine, or take the mark off after the install:
+    No paid certificate signed HotDogStand, so macOS asks before it opens
+    the app the first time. If macOS says that it cannot check the app, open
+    System Settings, then Privacy & Security, and choose Open Anyway. Or take
+    the mark off after the install:
 
       xattr -dr com.apple.quarantine #{appdir}/HotDogStand.app
 
