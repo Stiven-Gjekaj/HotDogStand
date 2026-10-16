@@ -120,6 +120,59 @@ pub fn markdown(text: &str) -> slint::StyledText {
         .unwrap_or_else(|_| slint::StyledText::from_plain_text(text))
 }
 
+/// The longest directory, in characters, that a menu of recent workspaces
+/// shows. A longer directory keeps its last parts.
+const RECENT_DIR_MAX: usize = 40;
+
+/// The name of a workspace in a menu of recent workspaces: the name of the
+/// file, then its directory, with `~` for the home directory.
+pub fn recent_label(path: &std::path::Path, home: Option<&std::path::Path>) -> String {
+    let name = path
+        .file_name()
+        .map(|n| n.to_string_lossy().into_owned())
+        .unwrap_or_else(|| path.display().to_string());
+    let Some(dir) = path.parent().filter(|d| !d.as_os_str().is_empty()) else {
+        return name;
+    };
+    let dir = match home.and_then(|home| dir.strip_prefix(home).ok()) {
+        Some(rest) if rest.as_os_str().is_empty() => "~".to_owned(),
+        Some(rest) => format!("~{}{}", std::path::MAIN_SEPARATOR, rest.display()),
+        None => dir.display().to_string(),
+    };
+    format!("{name} ({})", shorten_dir(&dir))
+}
+
+/// Makes a directory short enough for a menu. It removes the first parts and
+/// puts `...` in their place.
+fn shorten_dir(dir: &str) -> String {
+    if dir.chars().count() <= RECENT_DIR_MAX {
+        return dir.to_owned();
+    }
+    let sep = std::path::MAIN_SEPARATOR;
+    let mut tail = String::new();
+    for part in dir.rsplit(sep).filter(|p| !p.is_empty()) {
+        let next = format!("{sep}{part}{tail}");
+        if next.chars().count() + 3 > RECENT_DIR_MAX {
+            break;
+        }
+        tail = next;
+    }
+    if tail.is_empty() {
+        // One part is too long alone, so the label keeps its end.
+        let chars: Vec<char> = dir.chars().collect();
+        tail = chars[chars.len() - (RECENT_DIR_MAX - 3)..].iter().collect();
+    }
+    format!("...{tail}")
+}
+
+/// The name of a workspace when the file gives none: the name of the file
+/// without its extension.
+pub fn workspace_name(path: &std::path::Path) -> String {
+    path.file_stem()
+        .map(|n| n.to_string_lossy().into_owned())
+        .unwrap_or_default()
+}
+
 /// True for a link that a click can open: a web page or an e-mail address.
 /// A link to a file or to another program stays closed, because the text of
 /// a ticket can come from an export that another person wrote.
@@ -238,6 +291,55 @@ mod tests {
         assert_ne!(
             markdown("**bold**"),
             slint::StyledText::from_plain_text("**bold**")
+        );
+    }
+
+    #[test]
+    fn a_recent_workspace_shows_its_name_and_its_directory() {
+        use std::path::{MAIN_SEPARATOR, Path, PathBuf};
+        let home = PathBuf::from(format!("{MAIN_SEPARATOR}home{MAIN_SEPARATOR}ana"));
+        let docs = home.join("Documents").join("Office.hotdogstand");
+        assert_eq!(
+            recent_label(&docs, Some(&home)),
+            format!("Office.hotdogstand (~{MAIN_SEPARATOR}Documents)")
+        );
+        assert_eq!(
+            recent_label(&home.join("Home.db"), Some(&home)),
+            "Home.db (~)"
+        );
+        let other = PathBuf::from(format!("{MAIN_SEPARATOR}srv{MAIN_SEPARATOR}Team.db"));
+        assert_eq!(
+            recent_label(&other, Some(&home)),
+            format!("Team.db ({MAIN_SEPARATOR}srv)")
+        );
+        assert_eq!(recent_label(Path::new("Bare.db"), None), "Bare.db");
+    }
+
+    #[test]
+    fn a_long_directory_keeps_its_last_parts() {
+        use std::path::{MAIN_SEPARATOR as S, PathBuf};
+        let dir =
+            format!("{S}private{S}tmp{S}a-very-long-session-directory-name{S}scratchpad{S}ws");
+        let path = PathBuf::from(&dir).join("Home.hotdogstand");
+        let label = recent_label(&path, None);
+        assert_eq!(label, format!("Home.hotdogstand (...{S}scratchpad{S}ws)"));
+
+        let one_part = format!("{S}{}", "x".repeat(60));
+        let label = recent_label(&PathBuf::from(&one_part).join("W.db"), None);
+        let dir = label.trim_start_matches("W.db (").trim_end_matches(')');
+        assert_eq!(dir.chars().count(), RECENT_DIR_MAX);
+        assert!(dir.starts_with("...x"));
+    }
+
+    #[test]
+    fn a_workspace_is_named_after_its_file() {
+        assert_eq!(
+            workspace_name(std::path::Path::new("/x/Office.hotdogstand")),
+            "Office"
+        );
+        assert_eq!(
+            workspace_name(std::path::Path::new("workspace.db")),
+            "workspace"
         );
     }
 

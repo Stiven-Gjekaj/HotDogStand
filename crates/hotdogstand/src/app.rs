@@ -21,7 +21,7 @@ use slint::{Color, ComponentHandle, Model, ModelRc, SharedString, VecModel};
 use crate::format::{self, Names};
 use crate::frame;
 use crate::ui::{
-    AboutWindow, AppMenu, HistoryEntry, LabelChip, LabelsWindow, MainWindow, Markdown,
+    AboutWindow, AppMenu, HistoryEntry, LabelChip, LabelsWindow, MainWindow, Markdown, MenuItem,
     PeopleWindow, PersonRow, Theme, ThemeName, TicketRow, TicketWindow,
 };
 
@@ -99,7 +99,7 @@ struct TicketView {
 
 pub struct App {
     store: RefCell<Store>,
-    path: PathBuf,
+    path: RefCell<PathBuf>,
     /// The settings of the application, and the file that holds them.
     config: RefCell<Config>,
     config_path: PathBuf,
@@ -140,6 +140,7 @@ macro_rules! style {
         menu.set_mark_hot_dog_stand($app.theme.get() == ThemeName::HotDogStand);
         menu.set_mark_dark($app.dark.get());
         menu.set_mark_system_frame($app.system_frame.get());
+        menu.set_recent($app.recent_labels());
     }};
 }
 
@@ -156,6 +157,14 @@ macro_rules! wire_menu {
                 }
             }
         };
+        menu.on_new_workspace(call(|app| app.new_workspace()));
+        menu.on_open_workspace(call(|app| app.open_workspace()));
+        let weak = Rc::downgrade($app);
+        menu.on_open_recent(move |i| {
+            if let Some(app) = weak.upgrade() {
+                app.open_recent(i as usize);
+            }
+        });
         menu.on_new_ticket(call(|app| app.open_ticket(None)));
         menu.on_export_json(call(|app| app.export_json()));
         menu.on_export_csv(call(|app| app.export_csv()));
@@ -238,7 +247,7 @@ impl App {
 
         let app = Rc::new(App {
             store: RefCell::new(store),
-            path,
+            path: RefCell::new(path.clone()),
             config: RefCell::new(config),
             config_path,
             zone: TimeZone::system(),
@@ -261,6 +270,7 @@ impl App {
         // The settings file takes the values from now on, so a later
         // workspace does not change them.
         app.change_config(|config| {
+            config.opened(&path);
             config.theme = Some(theme_value(theme).to_owned());
             config.dark = Some(dark);
             config.system_frame = Some(system_frame);
@@ -295,15 +305,19 @@ impl App {
         style!(self, main);
         main.set_system_frame(self.system_frame.get());
         wire_menu!(self, main);
-        main.set_workspace_name(
-            self.store
-                .borrow()
-                .setting("workspace_name")
-                .ok()
-                .flatten()
-                .unwrap_or_default()
-                .into(),
-        );
+        self.show_workspace_name();
+        self.fill_workspace_menu();
+        let weak = Rc::downgrade(self);
+        main.on_workspace_item(move |i| {
+            let Some(app) = weak.upgrade() else { return };
+            match i {
+                0 => app.new_workspace(),
+                1 => app.open_workspace(),
+                // Item 2 is the line between the two groups.
+                i if i >= 3 => app.open_recent(i as usize - 3),
+                _ => {}
+            }
+        });
         wire_frame!(main, resizable);
         main.on_close_window(|| {
             let _ = slint::quit_event_loop();
@@ -596,6 +610,185 @@ impl App {
         if let Some(w) = &*self.about_window.borrow() {
             w.set_system_frame(on);
         }
+    }
+
+    // Workspaces.
+
+    /// The names of the recent workspaces, for the menus.
+    fn recent_labels(&self) -> ModelRc<SharedString> {
+        let home = std::env::home_dir();
+        strings(
+            self.config
+                .borrow()
+                .recent
+                .iter()
+                .map(|path| format::recent_label(path, home.as_deref())),
+        )
+    }
+
+    /// Puts the name of the open workspace in the title of the main window.
+    fn show_workspace_name(&self) {
+        let name = self
+            .store
+            .borrow()
+            .setting("workspace_name")
+            .ok()
+            .flatten()
+            .unwrap_or_else(|| format::workspace_name(&self.path.borrow()));
+        self.main.set_workspace_name(name.into());
+    }
+
+    /// Fills the menu of the Workspace button, and the recent workspaces in
+    /// the macOS menus of every window.
+    fn fill_workspace_menu(&self) {
+        let item = |text: &str| MenuItem {
+            text: text.into(),
+            ..MenuItem::default()
+        };
+        let mut items = vec![
+            item("New workspace..."),
+            item("Open workspace..."),
+            MenuItem {
+                separator: true,
+                ..MenuItem::default()
+            },
+        ];
+        items.extend(self.recent_labels().iter().map(|label| item(&label)));
+        self.main.set_workspace_items(model(items));
+        self.restyle();
+    }
+
+    /// Asks the person before a change of workspace closes the ticket
+    /// windows, because a change that is not saved in them goes away.
+    fn may_leave(&self) -> bool {
+        let open = self.ticket_windows.borrow().len();
+        if open == 0 {
+            return true;
+        }
+        let (windows, them) = if open == 1 {
+            ("1 ticket window is", "it")
+        } else {
+            (&*format!("{open} ticket windows are"), "them")
+        };
+        let text = format!(
+            "{windows} open. A change that is not saved in {them} goes away. Open the other workspace?"
+        );
+        // With a parent, macOS shows the warning on the main window. Without
+        // one, the system shows it, and it can open behind other windows.
+        rfd::MessageDialog::new()
+            .set_parent(&self.main.window().window_handle())
+            .set_title("Open another workspace")
+            .set_description(text)
+            .set_level(rfd::MessageLevel::Warning)
+            .set_buttons(rfd::MessageButtons::OkCancel)
+            .show()
+            == rfd::MessageDialogResult::Ok
+    }
+
+    /// Makes a new workspace file and opens it.
+    fn new_workspace(self: &Rc<Self>) {
+        if !self.may_leave() {
+            return;
+        }
+        let Some(path) = rfd::FileDialog::new()
+            .set_title("New workspace")
+            .set_file_name("Workspace.hotdogstand")
+            .add_filter("HotDogStand workspace", &["hotdogstand"])
+            .save_file()
+        else {
+            return;
+        };
+        // HotDogStand never empties a file. When the person chooses a file
+        // that holds a workspace, that workspace opens. A file of another
+        // program is refused.
+        match Store::open(&path) {
+            Ok(store) => {
+                if let Ok(None) = store.setting("workspace_name") {
+                    let _ = store.set_setting("workspace_name", &format::workspace_name(&path));
+                }
+                self.switch_to(store, path);
+            }
+            Err(error) => self.report(error),
+        }
+    }
+
+    /// Asks for a workspace file and opens it.
+    fn open_workspace(self: &Rc<Self>) {
+        if !self.may_leave() {
+            return;
+        }
+        let Some(path) = rfd::FileDialog::new()
+            .set_title("Open workspace")
+            .add_filter("HotDogStand workspace", &["hotdogstand", "db"])
+            .pick_file()
+        else {
+            return;
+        };
+        self.open_path(path);
+    }
+
+    fn open_recent(self: &Rc<Self>, index: usize) {
+        let Some(path) = self.config.borrow().recent.get(index).cloned() else {
+            return;
+        };
+        if *self.path.borrow() == path || !self.may_leave() {
+            return;
+        }
+        self.open_path(path);
+    }
+
+    /// Opens a workspace file that is there. A file that does not open goes
+    /// off the list of recent workspaces.
+    fn open_path(self: &Rc<Self>, path: PathBuf) {
+        match Store::open_existing(&path) {
+            Ok(store) => self.switch_to(store, path),
+            Err(error) => {
+                self.change_config(|config| config.forget(&path));
+                self.fill_workspace_menu();
+                self.report(error);
+            }
+        }
+    }
+
+    /// Puts a workspace in the place of the open one. The windows that show
+    /// the data of the old workspace close.
+    fn switch_to(self: &Rc<Self>, store: Store, path: PathBuf) {
+        let views: Vec<TicketView> = self
+            .ticket_windows
+            .borrow_mut()
+            .drain()
+            .map(|(_, view)| view)
+            .collect();
+        for view in views {
+            let _ = view.window.hide();
+        }
+        if let Some(w) = self.people_window.borrow_mut().take() {
+            let _ = w.hide();
+        }
+        if let Some(w) = self.labels_window.borrow_mut().take() {
+            let _ = w.hide();
+        }
+        if let Some(w) = self.about_window.borrow_mut().take() {
+            let _ = w.hide();
+        }
+
+        *self.store.borrow_mut() = store;
+        *self.path.borrow_mut() = path.clone();
+        *self.query.borrow_mut() = Query::default();
+        self.shown.borrow_mut().clear();
+        let main = &self.main;
+        main.set_current(-1);
+        main.set_status_filter(0);
+        main.set_priority_filter(0);
+        main.set_assignee_filter(0);
+        main.set_label_filter(0);
+        main.set_search(SharedString::new());
+        main.set_error(SharedString::new());
+
+        self.change_config(|config| config.opened(&path));
+        self.show_workspace_name();
+        self.fill_workspace_menu();
+        self.reload();
     }
 
     // The ticket windows.
@@ -1255,7 +1448,7 @@ impl App {
         wire_menu!(self, &window);
         window.set_system_frame(self.system_frame.get());
         window.set_version(env!("CARGO_PKG_VERSION").into());
-        window.set_workspace_path(self.path.display().to_string().into());
+        window.set_workspace_path(self.path.borrow().display().to_string().into());
         let weak = Rc::downgrade(self);
         let close = move || {
             if let Some(app) = weak.upgrade()

@@ -51,6 +51,9 @@ export component MainWindow inherits AppWindow {
     callback filter-changed();
     callback sort(int);
     callback open-ticket(int);
+    // The menu of the Workspace button: new, open, and the recent ones.
+    in property <[MenuItem]> workspace-items;
+    callback workspace-item(int);
     callback new-ticket();
     callback export-json();
     callback export-csv();
@@ -75,6 +78,14 @@ export component MainWindow inherits AppWindow {
     preferred-height: 600px;
     min-width: 640px;
     min-height: 360px;
+
+    workspace-menu := Menu {
+        x: workspace-button.absolute-position.x - root.absolute-position.x;
+        y: workspace-button.absolute-position.y - root.absolute-position.y + workspace-button.height;
+        width: 320px;
+        items: root.workspace-items;
+        activated(i) => { root.workspace-item(i); }
+    }
 
     export-menu := Menu {
         x: export-button.absolute-position.x - root.absolute-position.x;
@@ -113,6 +124,7 @@ export component MainWindow inherits AppWindow {
             // Access keys, as in Windows: Alt and the first letter of a
             // command.
             if event.modifiers.alt && !event.modifiers.control && !event.modifiers.meta {
+                if event.text == "w" || event.text == "W" { workspace-menu.show(); return accept; }
                 if event.text == "n" || event.text == "N" { root.new-ticket(); return accept; }
                 if event.text == "e" || event.text == "E" { export-menu.show(); return accept; }
                 if event.text == "p" || event.text == "P" { root.show-people(); return accept; }
@@ -141,6 +153,12 @@ export component MainWindow inherits AppWindow {
             start-resize(edge) => { root.start-resize(edge); }
 
             CommandBar {
+                workspace-button := CommandButton {
+                    text: "Workspace";
+                    icon: @image-url("icons/workspace.svg");
+                    has-menu: true;
+                    clicked => { workspace-menu.show(); }
+                }
                 CommandButton {
                     text: "New ticket";
                     icon: @image-url("icons/new-ticket.svg");

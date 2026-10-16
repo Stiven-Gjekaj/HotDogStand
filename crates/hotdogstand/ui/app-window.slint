@@ -16,7 +16,12 @@ export global AppMenu {
     in-out property <bool> mark-hot-dog-stand;
     in-out property <bool> mark-dark;
     in-out property <bool> mark-system-frame;
+    // The names of the workspaces that the person opened last, newest first.
+    in property <[string]> recent;
 
+    callback new-workspace();
+    callback open-workspace();
+    callback open-recent(int);
     callback new-ticket();
     callback export-json();
     callback export-csv();
@@ -32,6 +37,24 @@ export component AppWindow inherits Window {
     if AppMenu.native: MenuBar {
         Menu {
             title: "File";
+            MenuItem {
+                title: "New Workspace...";
+                shortcut: @keys(Meta + Shift + N);
+                activated => { AppMenu.new-workspace(); }
+            }
+            MenuItem {
+                title: "Open Workspace...";
+                shortcut: @keys(Meta + O);
+                activated => { AppMenu.open-workspace(); }
+            }
+            Menu {
+                title: "Open Recent";
+                for name[i] in AppMenu.recent: MenuItem {
+                    title: name;
+                    activated => { AppMenu.open-recent(i); }
+                }
+            }
+            MenuSeparator { }
             MenuItem {
                 title: "New Ticket";
                 shortcut: @keys(Meta + N);
