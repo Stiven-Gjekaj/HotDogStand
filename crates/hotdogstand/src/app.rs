@@ -161,6 +161,7 @@ macro_rules! wire_menu {
         menu.on_new_workspace(call(|app| app.new_workspace()));
         menu.on_open_workspace(call(|app| app.open_workspace()));
         menu.on_import_json(call(|app| app.import_json()));
+        menu.on_back_up(call(|app| app.back_up()));
         let weak = Rc::downgrade($app);
         menu.on_open_recent(move |i| {
             if let Some(app) = weak.upgrade() {
@@ -316,8 +317,9 @@ impl App {
                 0 => app.new_workspace(),
                 1 => app.open_workspace(),
                 2 => app.import_json(),
-                // Item 3 is the line between the two groups.
-                i if i >= 4 => app.open_recent(i as usize - 4),
+                3 => app.back_up(),
+                // Item 4 is the line between the two groups.
+                i if i >= 5 => app.open_recent(i as usize - 5),
                 _ => {}
             }
         });
@@ -652,6 +654,7 @@ impl App {
             item("New workspace..."),
             item("Open workspace..."),
             item("Import from JSON..."),
+            item("Back up now..."),
             MenuItem {
                 separator: true,
                 ..MenuItem::default()
@@ -781,6 +784,32 @@ impl App {
                 }
                 self.report(error);
             }
+        }
+    }
+
+    /// Copies the open workspace to a file that the person chooses.
+    fn back_up(&self) {
+        let name = format!(
+            "{} {}.hotdogstand",
+            self.main.get_workspace_name(),
+            jiff::Zoned::now().date()
+        );
+        let Some(path) = dialog::save_file(
+            rfd::FileDialog::new()
+                .set_title("Back up the workspace")
+                .set_file_name(name)
+                .add_filter("HotDogStand workspace", &["hotdogstand"]),
+        ) else {
+            return;
+        };
+        match self.store.borrow().back_up(&path) {
+            Ok(()) => {
+                self.main.set_error(SharedString::new());
+                self.main.set_status_text(
+                    format!("Backed up the workspace to {}", path.display()).into(),
+                );
+            }
+            Err(error) => self.report(format!("The backup failed: {error}")),
         }
     }
 

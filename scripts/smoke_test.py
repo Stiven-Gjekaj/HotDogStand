@@ -6,10 +6,10 @@ Slint. It needs a binary that is built with the `smoke` feature:
     python3 scripts/smoke_test.py target/debug/hotdogstand --out smoke
 
 It makes a new workspace in a temporary directory, adds a ticket, opens it,
-adds a comment, and closes it. Then it exports the workspace to JSON, imports
-the export into a new workspace, and finds the ticket there. It writes a
-screenshot of each window to the directory of --out. It stops with an error at
-the first step that fails.
+adds a comment, and closes it. Then it exports the workspace to JSON, makes a
+backup, imports the export into a new workspace, and finds the ticket there.
+It writes a screenshot of each window to the directory of --out. It stops with
+an error at the first step that fails.
 
 The test cannot click in a dialog of the system, so it writes the answers to
 a file. The application reads them from there. See
@@ -28,10 +28,12 @@ import http.client
 import json
 import os
 import socket
+import sqlite3
 import subprocess
 import sys
 import tempfile
 import time
+from contextlib import closing
 
 PORT = 9315
 
@@ -220,6 +222,16 @@ def run(mcp, out, home, answers):
     answers.add(export)
     choose(mcp, main, "Export", "Workspace to JSON...")
     wait_for(lambda: os.path.exists(export), "the export file")
+
+    step("back up the workspace")
+    backup = os.path.join(home, "backup.hotdogstand")
+    answers.add(backup)
+    choose(mcp, main, "Workspace", "Back up now...")
+    wait_for(lambda: os.path.exists(backup), "the backup file")
+    with closing(sqlite3.connect(backup)) as db:
+        count = db.execute("SELECT count(*) FROM ticket").fetchone()[0]
+    if count != 1:
+        raise RuntimeError(f"the backup holds {count} tickets")
 
     step("import the export into a new workspace")
     imported = os.path.join(home, "Imported.hotdogstand")

@@ -23,6 +23,7 @@ export global AppMenu {
     callback open-workspace();
     callback open-recent(int);
     callback import-json();
+    callback back-up();
     callback new-ticket();
     callback export-json();
     callback export-csv();
@@ -58,6 +59,10 @@ export component AppWindow inherits Window {
             MenuItem {
                 title: "Import from JSON...";
                 activated => { AppMenu.import-json(); }
+            }
+            MenuItem {
+                title: "Back Up Now...";
+                activated => { AppMenu.back-up(); }
             }
             MenuSeparator { }
             MenuItem {
