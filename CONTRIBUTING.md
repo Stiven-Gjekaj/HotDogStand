@@ -100,6 +100,11 @@ Run these, exactly as the workflow does:
     cargo clippy --all-targets -- -D warnings
     cargo test
 
+For a change to a window or a dialog, run the smoke test too:
+
+    SLINT_EMIT_DEBUG_INFO=1 cargo build -p hotdogstand --features smoke
+    python3 scripts/smoke_test.py target/debug/hotdogstand --headless
+
 Add tests for what you change. A test builds the people, the tickets, and the
 labels that it needs in a database in memory. It does not read them from a
 file that a person edits.

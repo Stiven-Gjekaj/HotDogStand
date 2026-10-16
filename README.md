@@ -69,6 +69,7 @@ Windows 3.1. HotDogStand ships it as a theme.
   labels
 - A history that shows what changed, and when
 - Export the full workspace to JSON, or the list to CSV
+- Import a JSON export into a new workspace
 
 </td>
 <td width="50%" valign="top">
@@ -80,6 +81,7 @@ Windows 3.1. HotDogStand ships it as a theme.
 - Glass frames, Aero controls, and the Open Sans font
 - Two themes, Aero and Hot Dog Stand, each with a dark form
 - On macOS, the menus are in the menu bar of the system
+- More than one workspace, with a list of the recent ones
 
 </td>
 </tr>
@@ -163,10 +165,10 @@ has its icon and its name.
 
 ## Your data
 
-The workspace is one file on your computer. Nothing reads it except
-HotDogStand, and nothing sends it anywhere. To make a backup, copy the file
-or export it to JSON. To share tickets with another person, send them an
-export.
+Each workspace is one file on your computer. Nothing reads it except
+HotDogStand, and nothing sends it anywhere. To make a backup, use File > Back
+Up Now, or export the workspace to JSON. To share tickets with another person,
+send them an export. They open it with File > Import from JSON.
 
 ## Documentation
 

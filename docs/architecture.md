@@ -64,8 +64,11 @@ No account, no server, and no network means that nothing can stop this.
         hds-store/         SQLite
           src/
             lib.rs         open a workspace file
+            config.rs      the settings file of the application
             migrations.rs
             tickets.rs     read and write tickets, comments, events
+            snapshot.rs    the copy for the export, and the import
+            backup.rs      a copy of the open workspace file
             labels.rs
             people.rs
         hotdogstand/       the application, the binary
@@ -94,8 +97,16 @@ the input of the person, calls the store, and shows the result.
 
 ## Data model
 
-One workspace is one SQLite file. The first version opens one workspace, in
-the data directory of the operating system:
+One workspace is one SQLite file. The person can make, open, and switch
+workspaces with File > New Workspace, File > Open Workspace, and File > Open
+Recent. On Windows and Linux, the Workspace button of the command bar gives the
+same items. A new workspace file ends in `.hotdogstand`. Each workspace file
+has the application id `0x48445354` ("HDST") in its SQLite header, so
+HotDogStand refuses a database of another program and does not change it.
+
+At the start, the application opens the workspace that the person opened
+last. When no recent workspace opens, it opens the workspace in the data
+directory of the operating system:
 
 | System | Path |
 | ------ | ---- |
@@ -105,6 +116,17 @@ the data directory of the operating system:
 
 The variable `HOTDOGSTAND_WORKSPACE` gives a different path. A contributor
 uses it to work on a copy, and a test uses it to keep away from the real file.
+When the variable is set, the application opens that file and not a recent
+one.
+
+### The settings file
+
+The settings that are the same for each workspace are in `settings.txt` in the
+data directory: the theme, dark mode, the frame, and the last eight
+workspaces. Each line is `key = value`, so a person can read and correct the
+file. The variable `HOTDOGSTAND_CONFIG` gives a different path. When only
+`HOTDOGSTAND_WORKSPACE` is set, the file is `hotdogstand-settings.txt` beside
+that workspace, so a test does not change the settings of the person.
 
 ### person
 
@@ -208,8 +230,21 @@ The JSON file starts with `"format": "hotdogstand"` and `"version": 1`. A
 change to its shape raises the version. The CSV export takes the sort and the
 filter of the list view, so the file holds what the person sees.
 
-Import of the JSON file comes after the first version. The format is made so
-that an import can read it without loss.
+## Import
+
+"File > Import from JSON" reads a JSON export and puts it in a new workspace
+file. Each record keeps its number, so a link such as `#12` in a comment stays
+correct. The import does not merge an export into a workspace that holds
+data. It refuses an export from a newer version. When one record fails, it
+writes nothing, and it removes the file that it made.
+
+## Backup
+
+"File > Back Up Now" copies the open workspace to a file that the person
+chooses. It uses the backup API of SQLite, so the copy agrees with itself
+while the workspace is open. The copy goes to a new file first, so a failure
+keeps the old backup. A backup in the place of the open workspace is
+refused.
 
 ## The windows
 
@@ -232,6 +267,8 @@ that an import can read it without loss.
   Workspace, View, and Help. View holds the settings, with a check mark on
   each one that is on.
 - **About** names the version, the licence, and Slint.
+- Before a change of workspace closes the open ticket windows, a warning on
+  the main window asks the person.
 
 ## Styling
 
@@ -291,11 +328,15 @@ says this to the person who uses it.
   compares it with the data that went in.
 - The CI runs `cargo fmt --check`, `cargo clippy -- -D warnings`, and
   `cargo test` on Linux, macOS, and Windows.
+- A smoke test, `scripts/smoke_test.py`, starts the application with the
+  headless backend of Slint on the three systems. It uses the windows through
+  the MCP server of Slint: it makes a ticket, comments on it, closes it,
+  exports the workspace, makes a backup, and imports the export. A build with
+  the `smoke` feature reads the answers of the file dialogs from a file,
+  because a test cannot click in a dialog of the system.
 
 ## Not in the first version
 
-- Import of an export file.
-- More than one workspace file.
 - Attachments.
 - Live sharing, sync, a server, or a password. These are not planned.
 

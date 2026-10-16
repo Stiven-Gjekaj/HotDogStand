@@ -11,7 +11,31 @@ workspace file from an older one.
 
 ## Unreleased
 
-Nothing yet.
+### Workspaces
+
+- Make, open, and switch workspaces with File > New Workspace, File > Open
+  Workspace, and File > Open Recent. On Windows and Linux, the Workspace
+  button of the command bar gives the same items.
+- The application opens the workspace that you opened last.
+- When a workspace has no name, the title of the main window shows the name
+  of its file.
+- A warning asks before a change of workspace closes the open ticket windows.
+- HotDogStand marks each workspace file. It refuses a database of another
+  program and does not change it. A file from 0.1 opens and gets the mark.
+- The theme, dark mode, the frame, and the recent workspaces are in a
+  settings file in the data directory. They are the same for each workspace.
+
+### Your data
+
+- File > Import from JSON puts a JSON export in a new workspace file. Each
+  record keeps its number. It refuses an export from a newer version.
+- File > Back Up Now copies the open workspace to a file, with the backup API
+  of SQLite.
+
+### Tests
+
+- The smoke test exports the workspace, makes a backup, and imports the
+  export.
 
 ## 0.1.1 (2026-10-06)
 
