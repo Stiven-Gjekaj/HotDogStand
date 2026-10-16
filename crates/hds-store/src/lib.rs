@@ -43,6 +43,10 @@ pub enum Error {
     NotAWorkspace(PathBuf),
     #[error("There is no file at {0}.")]
     NoFile(PathBuf),
+    #[error("This workspace holds data. An export goes only into an empty workspace.")]
+    NotEmpty,
+    #[error("The export does not agree with itself, so nothing was imported: {0}")]
+    BadExport(String),
     #[error(transparent)]
     Sqlite(#[from] rusqlite::Error),
     #[error(transparent)]
