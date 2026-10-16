@@ -3,6 +3,7 @@
 //! The store writes each change and its event in one transaction, so the
 //! history always agrees with the data.
 
+mod backup;
 pub mod config;
 mod migrations;
 mod people;
@@ -43,6 +44,8 @@ pub enum Error {
     NotAWorkspace(PathBuf),
     #[error("There is no file at {0}.")]
     NoFile(PathBuf),
+    #[error("A backup cannot go in the place of the open workspace. Choose a different file.")]
+    BackupOverWorkspace,
     #[error("This workspace holds data. An export goes only into an empty workspace.")]
     NotEmpty,
     #[error("The export does not agree with itself, so nothing was imported: {0}")]
