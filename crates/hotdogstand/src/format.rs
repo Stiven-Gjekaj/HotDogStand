@@ -173,6 +173,28 @@ pub fn workspace_name(path: &std::path::Path) -> String {
         .unwrap_or_default()
 }
 
+/// The file name that an imported workspace gets first: the name of the
+/// workspace in the export, or the name of the export file. A character that
+/// a file name cannot hold becomes `-`.
+pub fn import_file_name(name: Option<&str>, json: &std::path::Path) -> String {
+    let name = name
+        .map(str::trim)
+        .filter(|n| !n.is_empty())
+        .map(str::to_owned)
+        .unwrap_or_else(|| workspace_name(json));
+    let name: String = name
+        .chars()
+        .map(|c| match c {
+            '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|' => '-',
+            c if c.is_control() => '-',
+            c => c,
+        })
+        .collect();
+    let name = name.trim_matches(|c: char| c == '.' || c.is_whitespace());
+    let name = if name.is_empty() { "Imported" } else { name };
+    format!("{name}.hotdogstand")
+}
+
 /// True for a link that a click can open: a web page or an e-mail address.
 /// A link to a file or to another program stays closed, because the text of
 /// a ticket can come from an export that another person wrote.
@@ -313,6 +335,29 @@ mod tests {
             format!("Team.db ({MAIN_SEPARATOR}srv)")
         );
         assert_eq!(recent_label(Path::new("Bare.db"), None), "Bare.db");
+    }
+
+    #[test]
+    fn an_import_is_named_after_its_workspace_or_its_file() {
+        use std::path::Path;
+        let json = Path::new("exports").join("hotdogstand-2026-10-16.json");
+        assert_eq!(
+            import_file_name(Some("Office"), &json),
+            "Office.hotdogstand"
+        );
+        assert_eq!(
+            import_file_name(None, &json),
+            "hotdogstand-2026-10-16.hotdogstand"
+        );
+        assert_eq!(
+            import_file_name(Some("  "), &json),
+            "hotdogstand-2026-10-16.hotdogstand"
+        );
+        assert_eq!(
+            import_file_name(Some("Q3: a/b <test>"), &json),
+            "Q3- a-b -test-.hotdogstand"
+        );
+        assert_eq!(import_file_name(Some(".."), &json), "Imported.hotdogstand");
     }
 
     #[test]

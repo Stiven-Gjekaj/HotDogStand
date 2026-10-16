@@ -10,13 +10,14 @@ use std::io::BufWriter;
 use std::path::{Path, PathBuf};
 use std::rc::{Rc, Weak};
 
-use hds_core::export::{write_csv, write_json};
+use hds_core::export::{read_json, write_csv, write_json};
 use hds_core::query::{AssigneeFilter, Column, StatusFilter};
 use hds_core::{Edit, Label, NewTicket, Person, Priority, Query, Status, Ticket, Title};
 use hds_store::Store;
 use hds_store::config::Config;
 use jiff::tz::TimeZone;
 use slint::{Color, ComponentHandle, Model, ModelRc, SharedString, VecModel};
+use std::io::BufReader;
 
 use crate::format::{self, Names};
 use crate::frame;
@@ -159,6 +160,7 @@ macro_rules! wire_menu {
         };
         menu.on_new_workspace(call(|app| app.new_workspace()));
         menu.on_open_workspace(call(|app| app.open_workspace()));
+        menu.on_import_json(call(|app| app.import_json()));
         let weak = Rc::downgrade($app);
         menu.on_open_recent(move |i| {
             if let Some(app) = weak.upgrade() {
@@ -313,8 +315,9 @@ impl App {
             match i {
                 0 => app.new_workspace(),
                 1 => app.open_workspace(),
-                // Item 2 is the line between the two groups.
-                i if i >= 3 => app.open_recent(i as usize - 3),
+                2 => app.import_json(),
+                // Item 3 is the line between the two groups.
+                i if i >= 4 => app.open_recent(i as usize - 4),
                 _ => {}
             }
         });
@@ -648,6 +651,7 @@ impl App {
         let mut items = vec![
             item("New workspace..."),
             item("Open workspace..."),
+            item("Import from JSON..."),
             MenuItem {
                 separator: true,
                 ..MenuItem::default()
@@ -725,6 +729,60 @@ impl App {
             return;
         };
         self.open_path(path);
+    }
+
+    /// Reads a JSON export and puts it in a new workspace file. It does not
+    /// merge an export into a workspace that holds data.
+    fn import_json(self: &Rc<Self>) {
+        if !self.may_leave() {
+            return;
+        }
+        let Some(json) = rfd::FileDialog::new()
+            .set_title("Import from JSON")
+            .add_filter("JSON", &["json"])
+            .pick_file()
+        else {
+            return;
+        };
+        let snapshot = match File::open(&json)
+            .map_err(anyhow::Error::from)
+            .and_then(|file| Ok(read_json(BufReader::new(file))?))
+        {
+            Ok(snapshot) => snapshot,
+            Err(error) => return self.report(error),
+        };
+        let name = snapshot.settings.get("workspace_name").map(String::as_str);
+        let Some(path) = rfd::FileDialog::new()
+            .set_title("Save the imported workspace")
+            .set_file_name(format::import_file_name(name, &json))
+            .add_filter("HotDogStand workspace", &["hotdogstand"])
+            .save_file()
+        else {
+            return;
+        };
+        let is_new = !path.exists();
+        let result = Store::open(&path).and_then(|store| {
+            store.import(&snapshot)?;
+            if let Ok(None) = store.setting("workspace_name") {
+                store.set_setting("workspace_name", &format::workspace_name(&path))?;
+            }
+            Ok(store)
+        });
+        match result {
+            Ok(store) => self.switch_to(store, path),
+            Err(error) => {
+                // The store is closed here. A file that the import made is
+                // removed, so a failed import leaves no empty workspace.
+                if is_new {
+                    for end in ["", "-wal", "-shm"] {
+                        let mut file = path.clone().into_os_string();
+                        file.push(end);
+                        let _ = std::fs::remove_file(file);
+                    }
+                }
+                self.report(error);
+            }
+        }
     }
 
     fn open_recent(self: &Rc<Self>, index: usize) {
