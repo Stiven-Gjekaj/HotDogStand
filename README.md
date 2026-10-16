@@ -27,7 +27,7 @@ _One native window, one SQLite file, no server, no account_
 ---
 
 > [!NOTE]
-> **Version 0.1.0 is out.**
+> **Version 0.2.0 is out.**
 > [Install](#install) says how to get it, and [CHANGELOG.md](CHANGELOG.md)
 > says what it holds.
 > [TODO.md](TODO.md) lists the known problems and the measurements.

@@ -11,6 +11,13 @@ workspace file from an older one.
 
 ## Unreleased
 
+Nothing yet.
+
+## 0.2.0 (2026-10-16)
+
+This release opens more than one workspace, imports an export, and makes a
+backup of the open workspace.
+
 ### Workspaces
 
 - Make, open, and switch workspaces with File > New Workspace, File > Open
@@ -36,6 +43,11 @@ workspace file from an older one.
 
 - The smoke test exports the workspace, makes a backup, and imports the
   export.
+
+### Known problems
+
+- The packages are not signed. Windows SmartScreen and macOS Gatekeeper warn
+  before the first start. The readme says how to open the application.
 
 ## 0.1.1 (2026-10-06)
 
