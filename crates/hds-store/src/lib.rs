@@ -3,6 +3,7 @@
 //! The store writes each change and its event in one transaction, so the
 //! history always agrees with the data.
 
+pub mod config;
 mod migrations;
 mod people;
 mod snapshot;
@@ -70,6 +71,17 @@ pub fn workspace_path() -> Result<PathBuf> {
     if let Some(path) = std::env::var_os(WORKSPACE_VAR).filter(|p| !p.is_empty()) {
         return Ok(PathBuf::from(path));
     }
+    Ok(data_dir()?.join("workspace.db"))
+}
+
+/// True when [`WORKSPACE_VAR`] names the workspace. Then the application
+/// opens that file and not the one that it opened last.
+pub fn workspace_is_given() -> bool {
+    std::env::var_os(WORKSPACE_VAR).is_some_and(|p| !p.is_empty())
+}
+
+/// The directory of the data of HotDogStand on this system.
+pub(crate) fn data_dir() -> Result<PathBuf> {
     let base = directories::BaseDirs::new().ok_or(Error::NoDataDirectory)?;
     // Linux names its data directories in lower case. Windows and macOS use
     // the name of the application.
@@ -78,7 +90,7 @@ pub fn workspace_path() -> Result<PathBuf> {
     } else {
         "HotDogStand"
     };
-    Ok(base.data_dir().join(name).join("workspace.db"))
+    Ok(base.data_dir().join(name))
 }
 
 type Clock = Box<dyn Fn() -> Timestamp>;
