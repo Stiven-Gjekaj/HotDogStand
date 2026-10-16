@@ -21,6 +21,11 @@ rfd.workspace = true
 # resize it.
 slint = { workspace = true, features = ["unstable-winit-030", "raw-window-handle-06"] }
 
+[features]
+# A build for the smoke test: the MCP server of Slint, and the answers of the
+# dialogs from a variable. See src/dialog.rs and scripts/smoke_test.py.
+smoke = ["slint/mcp"]
+
 [build-dependencies]
 slint-build.workspace = true
 

@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
 """Starts HotDogStand and uses it as a person does, through the MCP server of
-Slint. It needs a binary that is built with the `slint/mcp` feature:
+Slint. It needs a binary that is built with the `smoke` feature:
 
-    SLINT_EMIT_DEBUG_INFO=1 cargo build -p hotdogstand --features slint/mcp
+    SLINT_EMIT_DEBUG_INFO=1 cargo build -p hotdogstand --features smoke
     python3 scripts/smoke_test.py target/debug/hotdogstand --out smoke
 
 It makes a new workspace in a temporary directory, adds a ticket, opens it,
-adds a comment, and writes a screenshot of each window to the directory of
---out. It stops with an error at the first step that fails.
+adds a comment, and closes it. Then it exports the workspace to JSON, imports
+the export into a new workspace, and finds the ticket there. It writes a
+screenshot of each window to the directory of --out. It stops with an error at
+the first step that fails.
+
+The test cannot click in a dialog of the system, so it writes the answers to
+a file. The application reads them from there. See
+crates/hotdogstand/src/dialog.rs.
 
 Set --headless to use the headless backend of Slint, for a computer with no
 display, such as a CI runner.
@@ -104,6 +110,9 @@ class Mcp:
     def press(self, handle, action="Default_"):
         self.call("invoke_accessibility_action", {"elementHandle": handle, "action": action})
 
+    def click(self, handle):
+        self.call("click_element", {"elementHandle": handle})
+
     def type_into(self, handle, text):
         self.call("set_element_value", {"elementHandle": handle, "value": text})
 
@@ -143,7 +152,36 @@ def step(text):
     print(f"smoke: {text}", flush=True)
 
 
-def run(mcp, out):
+class Answers:
+    """The file that answers the dialogs of the application, one line each."""
+
+    def __init__(self, path):
+        self.path = path
+        open(path, "w").close()
+
+    def add(self, *answers):
+        with open(self.path, "a") as f:
+            for answer in answers:
+                f.write(f"{answer}\n")
+
+
+def choose(mcp, window, button, item):
+    """Opens the menu of a button in the command bar and clicks an item."""
+    mcp.press(mcp.element(window, "Button", button))
+    mcp.click(wait_for(lambda: [h for h, label in mcp.find(window, "Text") if label == item],
+                       f"the item {item!r} of the menu {button!r}")[0])
+
+
+def window_title(mcp, window):
+    return next((label for _, label in mcp.find(window, "Text")
+                 if label.endswith(" - HotDogStand")), "")
+
+
+def status_text(mcp, window):
+    return next((label for _, label in mcp.find(window, "Text") if "in the workspace" in label), "")
+
+
+def run(mcp, out, home, answers):
     main = wait_for(lambda: mcp.windows(), "the main window")[0]
     step("the main window is open")
     mcp.screenshot(main, os.path.join(out, "1-empty.png"))
@@ -176,20 +214,42 @@ def run(mcp, out):
     step("close the ticket")
     mcp.press(mcp.element(opened, "Button", "Close ticket"))
     wait_for(lambda: not mcp.find(main, "ListItem"), "the closed ticket leaves the list")
+
+    step("export the workspace to JSON")
+    export = os.path.join(home, "export.json")
+    answers.add(export)
+    choose(mcp, main, "Export", "Workspace to JSON...")
+    wait_for(lambda: os.path.exists(export), "the export file")
+
+    step("import the export into a new workspace")
+    imported = os.path.join(home, "Imported.hotdogstand")
+    # The ticket window is still open, so the application asks first.
+    answers.add("ok", export, imported)
+    before = window_title(mcp, main)
+    choose(mcp, main, "Workspace", "Import from JSON...")
+    wait_for(lambda: window_title(mcp, main) not in ("", before), "the title of the imported workspace")
+    if not os.path.exists(imported):
+        raise RuntimeError("the import made no workspace file")
+    text = wait_for(lambda: status_text(mcp, main), "the count of tickets")
+    if text != "0 tickets shown. 1 ticket in the workspace.":
+        raise RuntimeError(f"the imported workspace shows {text!r}")
+    mcp.screenshot(main, os.path.join(out, "4-imported.png"))
     step("all steps passed")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument("binary", help="a HotDogStand binary built with the slint/mcp feature")
+    parser.add_argument("binary", help="a HotDogStand binary built with the smoke feature")
     parser.add_argument("--out", default="smoke", help="the directory for the screenshots")
     parser.add_argument("--headless", action="store_true", help="use the headless backend")
     args = parser.parse_args()
     os.makedirs(args.out, exist_ok=True)
 
     with tempfile.TemporaryDirectory() as home:
+        answers = Answers(os.path.join(home, "answers.txt"))
         env = dict(os.environ,
                    HOTDOGSTAND_WORKSPACE=os.path.join(home, "workspace.db"),
+                   HOTDOGSTAND_SMOKE_ANSWERS=answers.path,
                    SLINT_MCP_PORT=str(PORT))
         if args.headless:
             env["SLINT_BACKEND"] = "headless"
@@ -197,7 +257,7 @@ def main():
         process = subprocess.Popen([args.binary], env=env, stdout=log, stderr=subprocess.STDOUT)
         try:
             wait_for_port(PORT, process)
-            run(Mcp(), args.out)
+            run(Mcp(), args.out, home, answers)
         except Exception as error:
             print(f"smoke: FAILED: {error}", file=sys.stderr)
             return 1

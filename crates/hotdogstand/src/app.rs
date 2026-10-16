@@ -20,11 +20,11 @@ use slint::{Color, ComponentHandle, Model, ModelRc, SharedString, VecModel};
 use std::io::BufReader;
 
 use crate::format::{self, Names};
-use crate::frame;
 use crate::ui::{
     AboutWindow, AppMenu, HistoryEntry, LabelChip, LabelsWindow, MainWindow, Markdown, MenuItem,
     PeopleWindow, PersonRow, Theme, ThemeName, TicketRow, TicketWindow,
 };
+use crate::{dialog, frame};
 
 /// The column of the list that each header sorts by. The labels column does
 /// not sort.
@@ -679,14 +679,13 @@ impl App {
         );
         // With a parent, macOS shows the warning on the main window. Without
         // one, the system shows it, and it can open behind other windows.
-        rfd::MessageDialog::new()
-            .set_parent(&self.main.window().window_handle())
-            .set_title("Open another workspace")
-            .set_description(text)
-            .set_level(rfd::MessageLevel::Warning)
-            .set_buttons(rfd::MessageButtons::OkCancel)
-            .show()
-            == rfd::MessageDialogResult::Ok
+        dialog::confirm(
+            rfd::MessageDialog::new()
+                .set_parent(&self.main.window().window_handle())
+                .set_title("Open another workspace")
+                .set_description(text)
+                .set_level(rfd::MessageLevel::Warning),
+        )
     }
 
     /// Makes a new workspace file and opens it.
@@ -694,12 +693,12 @@ impl App {
         if !self.may_leave() {
             return;
         }
-        let Some(path) = rfd::FileDialog::new()
-            .set_title("New workspace")
-            .set_file_name("Workspace.hotdogstand")
-            .add_filter("HotDogStand workspace", &["hotdogstand"])
-            .save_file()
-        else {
+        let Some(path) = dialog::save_file(
+            rfd::FileDialog::new()
+                .set_title("New workspace")
+                .set_file_name("Workspace.hotdogstand")
+                .add_filter("HotDogStand workspace", &["hotdogstand"]),
+        ) else {
             return;
         };
         // HotDogStand never empties a file. When the person chooses a file
@@ -721,11 +720,11 @@ impl App {
         if !self.may_leave() {
             return;
         }
-        let Some(path) = rfd::FileDialog::new()
-            .set_title("Open workspace")
-            .add_filter("HotDogStand workspace", &["hotdogstand", "db"])
-            .pick_file()
-        else {
+        let Some(path) = dialog::pick_file(
+            rfd::FileDialog::new()
+                .set_title("Open workspace")
+                .add_filter("HotDogStand workspace", &["hotdogstand", "db"]),
+        ) else {
             return;
         };
         self.open_path(path);
@@ -737,11 +736,11 @@ impl App {
         if !self.may_leave() {
             return;
         }
-        let Some(json) = rfd::FileDialog::new()
-            .set_title("Import from JSON")
-            .add_filter("JSON", &["json"])
-            .pick_file()
-        else {
+        let Some(json) = dialog::pick_file(
+            rfd::FileDialog::new()
+                .set_title("Import from JSON")
+                .add_filter("JSON", &["json"]),
+        ) else {
             return;
         };
         let snapshot = match File::open(&json)
@@ -752,12 +751,12 @@ impl App {
             Err(error) => return self.report(error),
         };
         let name = snapshot.settings.get("workspace_name").map(String::as_str);
-        let Some(path) = rfd::FileDialog::new()
-            .set_title("Save the imported workspace")
-            .set_file_name(format::import_file_name(name, &json))
-            .add_filter("HotDogStand workspace", &["hotdogstand"])
-            .save_file()
-        else {
+        let Some(path) = dialog::save_file(
+            rfd::FileDialog::new()
+                .set_title("Save the imported workspace")
+                .set_file_name(format::import_file_name(name, &json))
+                .add_filter("HotDogStand workspace", &["hotdogstand"]),
+        ) else {
             return;
         };
         let is_new = !path.exists();
@@ -1591,9 +1590,10 @@ fn timing() -> bool {
 }
 
 fn save_dialog(name: &str, kind: &str, extension: &str) -> Option<PathBuf> {
-    rfd::FileDialog::new()
-        .set_title("Export")
-        .set_file_name(name)
-        .add_filter(kind, &[extension])
-        .save_file()
+    dialog::save_file(
+        rfd::FileDialog::new()
+            .set_title("Export")
+            .set_file_name(name)
+            .add_filter(kind, &[extension]),
+    )
 }

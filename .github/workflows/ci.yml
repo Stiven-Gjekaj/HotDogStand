@@ -62,7 +62,7 @@ jobs:
           key: smoke
 
       - name: Build with the MCP server
-        run: cargo build -p hotdogstand --features slint/mcp
+        run: cargo build -p hotdogstand --features smoke
 
       - name: Run the smoke test
         shell: bash
