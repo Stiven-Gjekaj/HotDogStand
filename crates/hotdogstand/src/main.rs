@@ -30,13 +30,34 @@ fn main() -> anyhow::Result<()> {
         eprintln!("hotdogstand: the desktop id is not set: {error}");
     }
     let config_path = hds_store::config::config_path()?;
-    let config = hds_store::config::Config::load(&config_path)?;
+    let mut config = hds_store::config::Config::load(&config_path)?;
+    let (store, path) = first_workspace(&mut config)?;
+    app::App::new(store, path, config, config_path)?.run(started)
+}
+
+/// Opens the workspace that the person opened last. When it does not open,
+/// it goes off the list, and the workspace before it is next. When no recent
+/// workspace opens, the workspace in the data directory opens. A path in
+/// `HOTDOGSTAND_WORKSPACE` comes before all of them.
+fn first_workspace(
+    config: &mut hds_store::config::Config,
+) -> anyhow::Result<(hds_store::Store, std::path::PathBuf)> {
+    if !hds_store::workspace_is_given() {
+        while let Some(path) = config.recent.first().cloned() {
+            match hds_store::Store::open_existing(&path) {
+                Ok(store) => return Ok((store, path)),
+                Err(error) => {
+                    eprintln!("hotdogstand: {}: {error}", path.display());
+                    config.forget(&path);
+                }
+            }
+        }
+    }
     let path = hds_store::workspace_path()?;
-    let store = match hds_store::Store::open(&path) {
-        Ok(store) => store,
+    match hds_store::Store::open(&path) {
+        Ok(store) => Ok((store, path)),
         Err(error) => {
             anyhow::bail!("Cannot open the workspace file {}: {error}", path.display());
         }
-    };
-    app::App::new(store, path, config, config_path)?.run(started)
+    }
 }
