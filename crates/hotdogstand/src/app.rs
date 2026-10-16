@@ -14,6 +14,7 @@ use hds_core::export::{write_csv, write_json};
 use hds_core::query::{AssigneeFilter, Column, StatusFilter};
 use hds_core::{Edit, Label, NewTicket, Person, Priority, Query, Status, Ticket, Title};
 use hds_store::Store;
+use hds_store::config::Config;
 use jiff::tz::TimeZone;
 use slint::{Color, ComponentHandle, Model, ModelRc, SharedString, VecModel};
 
@@ -99,6 +100,9 @@ struct TicketView {
 pub struct App {
     store: RefCell<Store>,
     path: PathBuf,
+    /// The settings of the application, and the file that holds them.
+    config: RefCell<Config>,
+    config_path: PathBuf,
     zone: TimeZone,
     main: MainWindow,
     data: RefCell<Data>,
@@ -208,17 +212,35 @@ macro_rules! wire_frame {
 }
 
 impl App {
-    pub fn new(store: Store, path: PathBuf) -> anyhow::Result<Rc<App>> {
-        let theme = match store.setting("theme")?.as_deref() {
+    pub fn new(
+        store: Store,
+        path: PathBuf,
+        config: Config,
+        config_path: PathBuf,
+    ) -> anyhow::Result<Rc<App>> {
+        // Version 0.1 kept these settings in the workspace. A setting that the
+        // settings file does not give yet comes from there.
+        let theme = match config.theme.clone().or(store.setting("theme")?).as_deref() {
             Some("hot-dog-stand") => ThemeName::HotDogStand,
             _ => ThemeName::Aero,
         };
-        let dark = store.setting("dark")?.as_deref() == Some("true");
-        let system_frame = store.setting("system_frame")?.as_deref() == Some("true");
+        let old = |key: &str| -> anyhow::Result<bool> {
+            Ok(store.setting(key)?.as_deref() == Some("true"))
+        };
+        let dark = match config.dark {
+            Some(dark) => dark,
+            None => old("dark")?,
+        };
+        let system_frame = match config.system_frame {
+            Some(frame) => frame,
+            None => old("system_frame")?,
+        };
 
         let app = Rc::new(App {
             store: RefCell::new(store),
             path,
+            config: RefCell::new(config),
+            config_path,
             zone: TimeZone::system(),
             main: MainWindow::new()?,
             data: RefCell::default(),
@@ -235,6 +257,13 @@ impl App {
             theme: Cell::new(theme),
             dark: Cell::new(dark),
             system_frame: Cell::new(system_frame),
+        });
+        // The settings file takes the values from now on, so a later
+        // workspace does not change them.
+        app.change_config(|config| {
+            config.theme = Some(theme_value(theme).to_owned());
+            config.dark = Some(dark);
+            config.system_frame = Some(system_frame);
         });
         app.wire_main();
         app.reload();
@@ -513,23 +542,24 @@ impl App {
 
     fn set_theme(&self, theme: ThemeName) {
         self.theme.set(theme);
-        let value = match theme {
-            ThemeName::Aero => "aero",
-            ThemeName::HotDogStand => "hot-dog-stand",
-        };
-        if let Err(error) = self.store.borrow().set_setting("theme", value) {
-            self.report(error);
-        }
+        self.change_config(|config| config.theme = Some(theme_value(theme).to_owned()));
         self.restyle();
     }
 
     fn set_dark(&self, dark: bool) {
         self.dark.set(dark);
-        let value = if dark { "true" } else { "false" };
-        if let Err(error) = self.store.borrow().set_setting("dark", value) {
-            self.report(error);
-        }
+        self.change_config(|config| config.dark = Some(dark));
         self.restyle();
+    }
+
+    /// Changes the settings of the application and writes them to their file.
+    fn change_config(&self, change: impl FnOnce(&mut Config)) {
+        let mut config = self.config.borrow_mut();
+        change(&mut config);
+        if let Err(error) = config.save(&self.config_path) {
+            drop(config);
+            self.report(format!("The settings were not saved: {error}"));
+        }
     }
 
     /// Gives every open window the current theme.
@@ -551,10 +581,7 @@ impl App {
 
     fn set_system_frame(&self, on: bool) {
         self.system_frame.set(on);
-        let value = if on { "true" } else { "false" };
-        if let Err(error) = self.store.borrow().set_setting("system_frame", value) {
-            self.report(error);
-        }
+        self.change_config(|config| config.system_frame = Some(on));
         self.main.set_system_frame(on);
         self.restyle();
         for view in self.ticket_windows.borrow().values() {
@@ -1295,6 +1322,14 @@ impl App {
             }
             Err(error) => self.report(format!("The export failed: {error}")),
         }
+    }
+}
+
+/// The text of a theme in the settings file.
+fn theme_value(theme: ThemeName) -> &'static str {
+    match theme {
+        ThemeName::Aero => "aero",
+        ThemeName::HotDogStand => "hot-dog-stand",
     }
 }
 

@@ -29,6 +29,8 @@ fn main() -> anyhow::Result<()> {
     {
         eprintln!("hotdogstand: the desktop id is not set: {error}");
     }
+    let config_path = hds_store::config::config_path()?;
+    let config = hds_store::config::Config::load(&config_path)?;
     let path = hds_store::workspace_path()?;
     let store = match hds_store::Store::open(&path) {
         Ok(store) => store,
@@ -36,5 +38,5 @@ fn main() -> anyhow::Result<()> {
             anyhow::bail!("Cannot open the workspace file {}: {error}", path.display());
         }
     };
-    app::App::new(store, path)?.run(started)
+    app::App::new(store, path, config, config_path)?.run(started)
 }
