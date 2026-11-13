@@ -1,0 +1,4 @@
+# SQLite makes these files when a program reads a fixture. A fixture is
+# only the workspace file and its export.
+*-shm
+*-wal
