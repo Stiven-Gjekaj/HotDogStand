@@ -6,8 +6,8 @@
 
 ## Versions that get a fix
 
-HotDogStand is early. A security fix goes to the newest commit on the default
-branch. No older version is maintained.
+A security fix goes into a new release of the newest 1.x version. No older
+version is maintained.
 
 ## How to report a problem
 

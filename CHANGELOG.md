@@ -5,13 +5,31 @@
 # Changelog
 
 Every release is written here, newest first. A version is `MAJOR.MINOR.PATCH`.
-A change to the schema of the workspace file, or to the export format, raises
-the minor number while the major number is 0. A new release always opens a
-workspace file from an older one.
+From 1.0.0, a release in the same major version opens each workspace file and
+reads each JSON export that an earlier release of that major version wrote. A
+change that breaks this raises the major number. A change that adds to the
+schema or to the export raises the minor number. Before 1.0.0, such a change
+raised the minor number. A new release always opens a workspace file from an
+older one.
 
 ## Unreleased
 
 Nothing yet.
+
+## 1.0.0 (2026-11-13)
+
+The first stable release. It has the features of 0.2.0 and no new ones.
+
+### Stable formats
+
+- The workspace file and the JSON export, version 1, are stable. Each later
+  1.x release opens the workspace files and reads the exports of 1.0.0 and of
+  each 0.x release.
+
+### Known problems
+
+- The packages are not signed. Windows SmartScreen and macOS Gatekeeper warn
+  before the first start. The readme says how to open the application.
 
 ## 0.2.0 (2026-10-16)
 
