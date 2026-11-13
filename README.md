@@ -127,7 +127,7 @@ With a package manager:
 
 | System | Command |
 | ------ | ------- |
-| macOS | `brew install --cask stiven-gjekaj/tap/hotdogstand` |
+| macOS | `brew trust stiven-gjekaj/tap` then `brew install --cask stiven-gjekaj/tap/hotdogstand` |
 | Windows, Scoop | `scoop bucket add stiven-gjekaj https://github.com/Stiven-Gjekaj/scoop-bucket` then `scoop install stiven-gjekaj/hotdogstand` |
 | Windows, winget | `winget install Stiven-Gjekaj.HotDogStand`, after Microsoft accepts the package |
 
