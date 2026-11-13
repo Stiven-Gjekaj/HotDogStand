@@ -92,8 +92,8 @@ A step marked "built, not tried" has code but nobody used it by hand yet.
 - Screenshots in the readme, of the application with the demo workspace
 - Measure the time to open the application, and the time to sort and filter
   10,000 tickets. The numbers are below.
-- [ ] Build a binary for Windows, macOS, and Linux in the CI
-- [ ] Tag `v0.1.0`
+- Build a binary for Windows, macOS, and Linux in the CI
+- Tag `v0.1.0`
 
 ## Measurements
 
