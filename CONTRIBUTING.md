@@ -147,6 +147,13 @@ An agent that works in this repository follows [AGENTS.md](AGENTS.md).
 
    Commit the cask and the manifest in their repositories, and open a pull
    request to microsoft/winget-pkgs with the winget manifest.
+6. Make the fixtures of the release, and commit them:
+
+       scripts/make-fixtures.sh v<version>
+
+   The script makes a workspace file and its JSON export with the code of the
+   release. A test opens them with each later version. Do not change a
+   fixture after it is in the repository.
 
 ## Reporting a security problem
 

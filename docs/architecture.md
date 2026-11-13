@@ -326,6 +326,10 @@ says this to the person who uses it.
   the tables that come out.
 - A test of the export writes to a `Vec<u8>`, reads the result back, and
   compares it with the data that went in.
+- `crates/hds-store/tests/fixtures/` holds a workspace file and a JSON export
+  that each release wrote with its own code. A test opens each workspace file
+  and imports each export, and compares the data. This keeps the promise of
+  1.0: each 1.x release opens the files of each earlier release.
 - The CI runs `cargo fmt --check`, `cargo clippy -- -D warnings`, and
   `cargo test` on Linux, macOS, and Windows.
 - A smoke test, `scripts/smoke_test.py`, starts the application with the
